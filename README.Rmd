@@ -1,0 +1,49 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# trafficsim
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of trafficsim is to simulate traffic levels on the network starting with OD data.
+
+To set-up the project with {targets} we ran the following commands:
+
+```{r}
+library(targets)
+```
+
+```{r, eval=FALSE}
+use_targets()
+```
+
+To visualise the project data processing stages run the following:
+
+```{r visnet, eval=FALSE}
+tar_visnetwork()
+```
+
+To re-run the code in this project, use the following command:
+
+```{r, eval=FALSE}
+tar_make()
+```
+
+For debugging, it's useful to be able to load an object from the pipeline.
+Do this with `tar_load()`.
+
+```{r load}
+tar_load(clean_traffic_data)
+clean_traffic_data
+```
