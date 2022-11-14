@@ -3,7 +3,7 @@
 
 library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
-library()
+library(tidyverse)
 # source("R/functions.R")
 options(tidyverse.quiet = TRUE)
 sf::sf_use_s2(TRUE)
@@ -22,6 +22,6 @@ list(
   }),
   tar_target(clean_traffic_data, {
     raw_count_data %>% 
-      slice(1:5)
+      mutate(na.omit())
   })
 )
