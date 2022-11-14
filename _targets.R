@@ -3,8 +3,11 @@
 
 library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
-library(tidyverse)
+# library(tidyverse)
+# library(sf)
 # source("R/functions.R")
+# library(tmap)
+# tmap_mode("view")
 options(tidyverse.quiet = TRUE)
 sf::sf_use_s2(TRUE)
 tar_option_set(packages = c("tidyverse", "tmap"))
@@ -22,6 +25,16 @@ list(
   }),
   tar_target(clean_traffic_data, {
     raw_count_data %>% 
-      mutate(na.omit())
+      na.omit()
+  }),
+  tar_target(newcastle_data, {
+    newcastle_data = clean_traffic_data %>% 
+      filter(Local_authority_name == "Newcastle upon Tyne")
+    newcastle_data = newcastle_data %>% 
+      sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+    tm_shape(newcastle_data) + tm_dots()
   })
 )
+
+
+
