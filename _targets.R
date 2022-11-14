@@ -32,7 +32,18 @@ list(
       filter(Local_authority_name == "Newcastle upon Tyne")
     newcastle_data = newcastle_data %>% 
       sf::st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
-    tm_shape(newcastle_data) + tm_dots()
+    # tm_shape(newcastle_data) + tm_dots()
+  }),
+  tar_target(newc_2021, {
+    newc_2021 = newcastle_data %>% 
+      filter(Year == 2021)
+    # 12 unique count points in 2021, each of which has 24 hours of data, each from a different day
+    # newc_2021 %>% 
+    #   group_by(Count_point_id) %>% 
+    #   summarise(n = n())
+    # newc_2021 %>% 
+    #   group_by(Count_date) %>% 
+    #   summarise(n = n())
   })
 )
 
