@@ -3,11 +3,11 @@
 
 library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
-# library(tidyverse)
-# library(sf)
-# source("R/functions.R")
-# library(tmap)
-# tmap_mode("view")
+library(tidyverse)
+library(sf)
+source("R/functions.R")
+library(tmap)
+tmap_mode("view")
 options(tidyverse.quiet = TRUE)
 sf::sf_use_s2(TRUE)
 tar_option_set(packages = c("tidyverse", "tmap", "sf"))
@@ -54,14 +54,25 @@ list(
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
   }),
+  # The linestring WKT geometries are not being shown correctly in the csv files
+  # this needs editing by hand or new code
   tar_target(plates_match_2021, {
     # hourly aggregated
-    plates_match_2021 = read_csv("data/uo-newcastle/2021-Plates Matching.csv")
-    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
-    # car_count_2021 %>% 
-    #   group_by(`Sensor Name`) %>% 
+    plates_match_2021 = read_csv("data/uo-newcastle/2021-day-Plates Matching.csv")
+    # 311 sensors, around 100-360 days of data each 
+    # plates_match_2021 %>%
+    #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
-    plates_match_2021 = st_as_sf(plates_match_2021, wkt = "Location (WKT)")
+    plates_match_2021 = st_as_sf(plates_match_2021, wkt = "Location (WKT)")  
+  }),
+  tar_target(traffic_flow_2021, {
+    # hourly aggregated
+    traffic_flow_2021 = read_csv("data/uo-newcastle/2021-86400-Traffic Flow.csv")
+    # 311 sensors, around 100-360 days of data each 
+    # traffic_flow_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    traffic_flow_2021_geom = st_as_sfc(traffic_flow_2021$`Location (WKT)`)
   })
 )
 
@@ -69,3 +80,8 @@ list(
 #   group_by(`Sensor Name`) %>%
 #   summarise(n = n())
 # tm_shape(car_group) + tm_dots()
+
+plate_group = plates_match_2021 %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(plate_group) + tm_lines()
