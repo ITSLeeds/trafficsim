@@ -3,11 +3,11 @@
 
 library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
-library(tidyverse)
-library(sf)
-source("R/functions.R")
-library(tmap)
-tmap_mode("view")
+# library(tidyverse)
+# library(sf)
+# # source("R/functions.R")
+# library(tmap)
+# tmap_mode("view")
 options(tidyverse.quiet = TRUE)
 sf::sf_use_s2(TRUE)
 tar_option_set(packages = c("tidyverse", "tmap", "sf"))
@@ -68,11 +68,11 @@ list(
   tar_target(traffic_flow_2021, {
     # hourly aggregated
     traffic_flow_2021 = read_csv("data/uo-newcastle/2021-86400-Traffic Flow.csv")
-    # 311 sensors, around 100-360 days of data each 
-    # traffic_flow_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    traffic_flow_2021_geom = st_as_sfc(traffic_flow_2021$`Location (WKT)`)
+    # there is only data for a small area around the Metro Centre
+    traffic_flow_2021 %>%
+      group_by(`Sensor Name`) %>%
+      summarise(n = n())
+    traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
   })
 )
 
@@ -81,7 +81,12 @@ list(
 #   summarise(n = n())
 # tm_shape(car_group) + tm_dots()
 
-plate_group = plates_match_2021 %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(plate_group) + tm_lines()
+# plate_group = plates_match_2021 %>%
+#   group_by(`Sensor Name`) %>%
+#   summarise(n = n())
+# tm_shape(plate_group) + tm_lines()
+
+# traffic_flow = traffic_flow_2021 %>%
+#   group_by(`Sensor Name`) %>%
+#   summarise(n = n())
+# tm_shape(traffic_flow) + tm_lines()
