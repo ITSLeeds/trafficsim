@@ -69,10 +69,28 @@ list(
     # hourly aggregated
     traffic_flow_2021 = read_csv("data/uo-newcastle/2021-86400-Traffic Flow.csv")
     # there is only data for a small area around the Metro Centre
-    traffic_flow_2021 %>%
+    # traffic_flow_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
+  }),
+  tar_target(people_count_2021, {
+    # hourly aggregated
+    people_count_2021 = read_csv("data/uo-newcastle/2021-3600-People Count.csv")
+    # 205 sensors, ~1500 hours of data each (8760hrs in a yr)
+    people_count_2021 %>%
       group_by(`Sensor Name`) %>%
       summarise(n = n())
-    traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
+    people_count_2021 = st_as_sf(people_count_2021, wkt = "Location (WKT)")
+  }),
+  tar_target(walking_2021, {
+    # hourly aggregated
+    walking_2021 = read_csv("data/uo-newcastle/2021-3600-Walking.csv")
+    # 74 sensors, 6000-8000 hours of data each (8760hrs in a yr)
+    # walking_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    walking_2021 = st_as_sf(walking_2021, wkt = "Location (WKT)")
   })
 )
 
@@ -86,7 +104,18 @@ list(
 #   summarise(n = n())
 # tm_shape(plate_group) + tm_lines()
 
-# traffic_flow = traffic_flow_2021 %>%
-#   group_by(`Sensor Name`) %>%
-#   summarise(n = n())
-# tm_shape(traffic_flow) + tm_lines()
+traffic_flow = traffic_flow_2021 %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(traffic_flow) + tm_lines()
+
+people_group = people_count_2021 %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(people_group) + tm_dots()
+
+# most of the walking count points are around a single square in central Newcastle
+walking_group = walking_2021 %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(walking_group) + tm_dots()
