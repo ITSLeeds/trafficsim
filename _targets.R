@@ -83,6 +83,16 @@ list(
     #   summarise(n = n())
     people_count_2021 = st_as_sf(people_count_2021, wkt = "Location (WKT)")
   }),
+  # Raw data for January
+  tar_target(people_count_jan, {
+    # hourly aggregated
+    people_count_jan = read_csv("data/uo-newcastle/2021-1-People Count.csv")
+    # 206 sensors, 2000-5000 minutes of data each 
+    # people_count_jan %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    people_count_jan = st_as_sf(people_count_jan, wkt = "Location (WKT)")
+  }),
   tar_target(walking_2021, {
     # hourly aggregated
     walking_2021 = read_csv("data/uo-newcastle/2021-3600-Walking.csv")
@@ -123,6 +133,11 @@ people_group = people_count_2021 %>%
   summarise(n = n())
 tm_shape(people_group) + tm_dots()
 
+people_group = people_count_jan %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(people_group) + tm_dots()
+
 # most of the walking count points are around a single square in central Newcastle
 walking_group = walking_2021 %>%
   group_by(`Sensor Name`) %>%
@@ -133,3 +148,6 @@ cycling_group = cycling_2021 %>%
   group_by(`Sensor Name`) %>%
   summarise(n = n())
 tm_shape(cycling_group) + tm_dots()
+
+first = people_count_jan %>% 
+  filter(Timestamp < "2021-01-01 00:01:00")
