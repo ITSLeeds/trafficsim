@@ -78,9 +78,9 @@ list(
     # hourly aggregated
     people_count_2021 = read_csv("data/uo-newcastle/2021-3600-People Count.csv")
     # 205 sensors, ~1500 hours of data each (8760hrs in a yr)
-    people_count_2021 %>%
-      group_by(`Sensor Name`) %>%
-      summarise(n = n())
+    # people_count_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
     people_count_2021 = st_as_sf(people_count_2021, wkt = "Location (WKT)")
   }),
   tar_target(walking_2021, {
@@ -91,6 +91,15 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     walking_2021 = st_as_sf(walking_2021, wkt = "Location (WKT)")
+  }),
+  tar_target(cycling_2021, {
+    # hourly aggregated
+    cycling_2021 = read_csv("data/uo-newcastle/2021-86400-Cycle Count.csv")
+    # 205 sensors, 71-72 days of data each 
+    # cycling_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    cycling_2021 = st_as_sf(cycling_2021, wkt = "Location (WKT)")
   })
 )
 
@@ -119,3 +128,8 @@ walking_group = walking_2021 %>%
   group_by(`Sensor Name`) %>%
   summarise(n = n())
 tm_shape(walking_group) + tm_dots()
+
+cycling_group = cycling_2021 %>%
+  group_by(`Sensor Name`) %>%
+  summarise(n = n())
+tm_shape(cycling_group) + tm_dots()
