@@ -44,7 +44,7 @@ foot_osrm = route(l = lines_foot, route_fun = route_osrm) # default routing prof
 bicycle_osrm = route(l = lines_bicycle, route_fun = route_osrm(osrm.profile = "bike"))
 car_osrm = route(l = lines_car, route_fun = route_osrm(osrm.profile = "car"))
 
-# foot_some = slice_sample(foot_osrm, n = 0.01)
+# foot_some = head(foot_osrm)
 tm_shape(foot_osrm) + tm_lines("foot")
 tm_shape(bicycle_osrm) + tm_lines("bicycle")
 tm_shape(car_osrm) + tm_lines("car")
