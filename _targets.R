@@ -5,9 +5,10 @@ library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
 # library(tidyverse)
 # library(sf)
-# # source("R/functions.R")
+source("R/download.R")
 # library(tmap)
 # tmap_mode("view")
+library(tidyverse)
 options(tidyverse.quiet = TRUE)
 sf::sf_use_s2(TRUE)
 tar_option_set(packages = c("tidyverse", "tmap", "sf"))
@@ -45,109 +46,92 @@ list(
     #   group_by(Count_date) %>% 
     #   summarise(n = n())
   }),
-  tar_target(car_count_2021, {
-    # hourly aggregated
-    car_count_2021 = read_csv("data/uo-newcastle/2021-3600-Car Count.csv")
-    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
-    # car_count_2021 %>% 
-    #   group_by(`Sensor Name`) %>% 
-    #   summarise(n = n())
-    car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
-  }),
-  # The linestring WKT geometries are not being shown correctly in the csv files
-  # this needs editing by hand or new code
-  tar_target(plates_match_2021, {
-    # hourly aggregated
-    plates_match_2021 = read_csv("data/uo-newcastle/2021-day-Plates Matching.csv")
-    # 311 sensors, around 100-360 days of data each 
-    # plates_match_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    plates_match_2021 = st_as_sf(plates_match_2021, wkt = "Location (WKT)")  
-  }),
-  tar_target(traffic_flow_2021, {
-    # hourly aggregated
-    traffic_flow_2021 = read_csv("data/uo-newcastle/2021-86400-Traffic Flow.csv")
-    # there is only data for a small area around the Metro Centre
-    # traffic_flow_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
-  }),
-  tar_target(people_count_2021, {
-    # hourly aggregated
-    people_count_2021 = read_csv("data/uo-newcastle/2021-3600-People Count.csv")
-    # 205 sensors, ~1500 hours of data each (8760hrs in a yr)
-    # people_count_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    people_count_2021 = st_as_sf(people_count_2021, wkt = "Location (WKT)")
-  }),
-  # Raw data for January
-  tar_target(people_count_jan, {
-    # hourly aggregated
-    people_count_jan = read_csv("data/uo-newcastle/2021-1-People Count.csv")
-    # 206 sensors, 2000-5000 minutes of data each 
-    # people_count_jan %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    people_count_jan = st_as_sf(people_count_jan, wkt = "Location (WKT)")
-  }),
-  tar_target(walking_2021, {
-    # hourly aggregated
-    walking_2021 = read_csv("data/uo-newcastle/2021-3600-Walking.csv")
-    # 74 sensors, 6000-8000 hours of data each (8760hrs in a yr)
-    # walking_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    walking_2021 = st_as_sf(walking_2021, wkt = "Location (WKT)")
-  }),
-  tar_target(cycling_2021, {
-    # hourly aggregated
-    cycling_2021 = read_csv("data/uo-newcastle/2021-86400-Cycle Count.csv")
-    # 205 sensors, 71-72 days of data each 
-    # cycling_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    cycling_2021 = st_as_sf(cycling_2021, wkt = "Location (WKT)")
+  
+# Urban Observatory data -------------------------------------------------
+  tar_target(download, {
+    # period data:
+    periods = paste0("2021-", 1:12)
+    for(i in periods) {
+      download_urban_data(period = i, dataset = "People%20Count")
+      # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
+      download_urban_data(period = i, dataset = "Car%20Count")
+    }
+    # years = as.character(2019:2021)
+    # for(i in years) {
+    #   download_urban_data(period = i, dataset = "People%20Count")
+    #   download_urban_data(period = i, dataset = "People%20Count")
+    # }
   })
+# ,
+
+
+  
+  # tar_target(car_count_2021, {
+  #   # hourly aggregated
+  #   car_count_2021 = read_csv("data/uo-newcastle/2021-3600-Car Count.csv")
+  #   # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+  #   # car_count_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
+  # }),
+  # # The linestring WKT geometries are not being shown correctly in the csv files
+  # # this needs editing by hand or new code
+  # tar_target(plates_match_2021, {
+  #   # hourly aggregated
+  #   plates_match_2021 = read_csv("data/uo-newcastle/2021-day-Plates Matching.csv")
+  #   # 311 sensors, around 100-360 days of data each 
+  #   # plates_match_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   plates_match_2021 = st_as_sf(plates_match_2021, wkt = "Location (WKT)")  
+  # }),
+  # tar_target(traffic_flow_2021, {
+  #   # hourly aggregated
+  #   traffic_flow_2021 = read_csv("data/uo-newcastle/2021-86400-Traffic Flow.csv")
+  #   # there is only data for a small area around the Metro Centre
+  #   # traffic_flow_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
+  # }),
+  # tar_target(people_count_2021, {
+  #   # hourly aggregated
+  #   people_count_2021 = read_csv("data/uo-newcastle/2021-3600-People Count.csv")
+  #   # 205 sensors, ~1500 hours of data each (8760hrs in a yr)
+  #   # people_count_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   people_count_2021 = st_as_sf(people_count_2021, wkt = "Location (WKT)")
+  # }),
+  # # Raw data for January
+  # tar_target(people_count_jan, {
+  #   # hourly aggregated
+  #   people_count_jan = read_csv("data/uo-newcastle/2021-1-People Count.csv")
+  #   # 206 sensors, 2000-5000 minutes of data each 
+  #   # people_count_jan %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   people_count_jan = st_as_sf(people_count_jan, wkt = "Location (WKT)")
+  # }),
+  # tar_target(walking_2021, {
+  #   # hourly aggregated
+  #   walking_2021 = read_csv("data/uo-newcastle/2021-3600-Walking.csv")
+  #   # 74 sensors, 6000-8000 hours of data each (8760hrs in a yr)
+  #   # walking_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   walking_2021 = st_as_sf(walking_2021, wkt = "Location (WKT)")
+  # }),
+  # tar_target(cycling_2021, {
+  #   # hourly aggregated
+  #   cycling_2021 = read_csv("data/uo-newcastle/2021-86400-Cycle Count.csv")
+  #   # 205 sensors, 71-72 days of data each 
+  #   # cycling_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   cycling_2021 = st_as_sf(cycling_2021, wkt = "Location (WKT)")
+  # })
 )
 
-# car_group = car_count_2021 %>%
-#   group_by(`Sensor Name`) %>%
-#   summarise(n = n())
-# tm_shape(car_group) + tm_dots()
 
-# plate_group = plates_match_2021 %>%
-#   group_by(`Sensor Name`) %>%
-#   summarise(n = n())
-# tm_shape(plate_group) + tm_lines()
-
-traffic_flow = traffic_flow_2021 %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(traffic_flow) + tm_lines()
-
-people_group = people_count_2021 %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(people_group) + tm_dots()
-
-people_group = people_count_jan %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(people_group) + tm_dots()
-
-# most of the walking count points are around a single square in central Newcastle
-walking_group = walking_2021 %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(walking_group) + tm_dots()
-
-cycling_group = cycling_2021 %>%
-  group_by(`Sensor Name`) %>%
-  summarise(n = n())
-tm_shape(cycling_group) + tm_dots()
-
-first = people_count_jan %>% 
-  filter(Timestamp < "2021-01-01 00:01:00")
