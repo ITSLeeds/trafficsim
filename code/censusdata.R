@@ -41,12 +41,14 @@ library(stplanr)
 # routes_osrm = route_osrm(from = from, to = to, osrm.profile = "foot") # not working
 # lines_some = head(lines)
 foot_osrm = route(l = lines_foot, route_fun = route_osrm) # default routing profile is "foot"
-bicycle_osrm = route(l = lines_bicycle, route_fun = route_osrm(osrm.profile = "bike"))
-car_osrm = route(l = lines_car, route_fun = route_osrm(osrm.profile = "car"))
+bicycle_osrm = route(l = lines_bicycle, route_fun = route_osrm, osrm.profile = "bike")
+car_osrm = route(l = lines_car, route_fun = route_osrm, osrm.profile = "car")
 
 saveRDS(foot_osrm, "data/foot_osrm.Rds")
 saveRDS(bicycle_osrm, "data/bicycle_osrm.Rds")
 saveRDS(car_osrm, "data/car_osrm.Rds")
+
+foot_osrm = readRDS("data/foot_osrm.Rds")
 
 # foot_some = head(foot_osrm)
 tm_shape(foot_osrm) + tm_lines("foot")
