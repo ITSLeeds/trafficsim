@@ -68,10 +68,46 @@ tm_shape(bicycle_osrm) + tm_lines("bicycle")
 tm_shape(car_osrm) + tm_lines("car_driver")
 
 
+# Jittered routes ---------------------------------------------------------
+
+min_distance_meters = 500
+disag_threshold = 50
+
+osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
+
+od_bicycle_jittered = odjitter::jitter(
+  od = lines_bicycle,
+  zones = tyneandwear,
+  zone_name_key = "geo_code",
+  subpoints = osm_cycle,
+  disaggregation_threshold = disag_threshold,
+  disaggregation_key = "bicycle",
+  min_distance_meters = min_distance_meters
+) 
+
+osm_drive = readRDS("data/osm_drive_2022-12-07.Rds")
+
+od_car_jittered = odjitter::jitter(
+  od = lines_car,
+  zones = tyneandwear,
+  zone_name_key = "geo_code",
+  subpoints_origins = osm_drive,
+  disaggregation_threshold = disag_threshold,
+  disaggregation_key = "car_driver",
+  min_distance_meters = min_distance_meters
+) 
+
+
 # Route networks ----------------------------------------------------------
 
 foot_rnet = overline(foot_osrm, attrib = "foot")
-bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle")
+bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle") # error
+# 2022-12-07 11:35:36 constructing segments
+# 2022-12-07 11:35:39 building geometry
+# |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=01s  
+# 2022-12-07 11:35:41 simplifying geometry
+# large data detected, using regionalisation, nrow = 106771
+# Error in FUN(X[[i]], ...) : subscript out of bounds
 car_rnet = overline(car_osrm, 
                     attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
                     )
