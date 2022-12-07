@@ -5,8 +5,8 @@ library(tmap)
 library(tidyverse)
 tmap_mode("view")
 
-tyneandwear = get_pct_zones("north-east")
-tyneandwear = tyneandwear %>% 
+northeast = get_pct_zones("north-east")
+tyneandwear = northeast %>% 
   filter(lad_name == "Newcastle upon Tyne" | lad_name == "Sunderland" | 
            lad_name == "Gateshead" | lad_name == "North Tyneside" |  
            lad_name =="South Tyneside")
@@ -77,7 +77,7 @@ osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
 
 od_bicycle_jittered = odjitter::jitter(
   od = lines_bicycle,
-  zones = tyneandwear,
+  zones = northeast,
   zone_name_key = "geo_code",
   subpoints = osm_cycle,
   disaggregation_threshold = disag_threshold,
@@ -89,9 +89,8 @@ osm_drive = readRDS("data/osm_drive_2022-12-07.Rds")
 
 od_car_jittered = odjitter::jitter(
   od = lines_car,
-  zones = tyneandwear,
+  zones = northeast,
   zone_name_key = "geo_code",
-  subpoints_origins = osm_drive,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "car_driver",
   min_distance_meters = min_distance_meters
