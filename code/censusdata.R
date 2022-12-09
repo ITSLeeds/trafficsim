@@ -82,7 +82,7 @@ disag_threshold = 50
 od_foot_jittered = odjitter::jitter(
   od = lines_foot,
   zones = northeast,
-  zone_name_key = "geo_code",
+  # zone_name_key = "geo_code",
   # subpoints = osm_foot,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "foot",
@@ -143,3 +143,16 @@ tm_shape(car_rnet) + tm_lines("car_driver")
 # rnet = rnet[tyneandwear, ]
 # tm_shape(rnet) + tm_lines("bicycle")
 
+# For testing:
+# library(odjitter)
+# od = readr::read_csv("https://github.com/dabreegster/odjitter/raw/main/data/od.csv")
+# zones = sf::read_sf("https://github.com/dabreegster/odjitter/raw/main/data/zones.geojson")
+# road_network = sf::read_sf("https://github.com/dabreegster/odjitter/raw/main/data/road_network.geojson")
+# od_jittered = jitter(od, zones, subpoints = road_network)
+# od_jittered = jitter(od, zones, subpoints = road_network, show_command = TRUE)
+# od_jittered = jitter(
+#   od,
+#   zones,
+#   subpoints = road_network,
+#   disaggregation_threshold = 50
+# )
