@@ -28,6 +28,8 @@ tm_shape(lines) + tm_lines()
 lines_foot = lines %>% 
   filter(foot > 0) %>% 
   select(-c(car_driver:ebike_sico2), -bicycle)
+lines_foot = lines_foot %>% 
+  select(geo_code1, geo_code2, foot)
 
 lines_bicycle = lines %>% 
   filter(bicycle > 0) %>% 
@@ -76,6 +78,9 @@ tm_shape(car_osrm) + tm_lines("car_driver")
 min_distance_meters = 500
 disag_threshold = 50
 
+northeast = northeast %>% 
+  select(geo_code)
+
 # Why do we get this error?
 # Error in UseMethod("st_write") : 
 #   no applicable method for 'st_write' applied to an object of class "NULL"
@@ -83,7 +88,7 @@ od_foot_jittered = odjitter::jitter(
   od = lines_foot,
   zones = northeast,
   # zone_name_key = "geo_code",
-  # subpoints = osm_foot,
+  subpoints = osm_drive,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "foot",
   min_distance_meters = min_distance_meters
@@ -94,7 +99,7 @@ osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
 od_bicycle_jittered = odjitter::jitter(
   od = lines_bicycle,
   zones = northeast,
-  zone_name_key = "geo_code",
+  # zone_name_key = "geo_code",
   subpoints = osm_cycle,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "bicycle",
