@@ -12,14 +12,17 @@ tyneandwear = northeast %>%
            lad_name =="South Tyneside")
 tm_shape(tyneandwear) + tm_polygons()
 
-lines = get_pct_lines(region = "north-east", purpose = "commute", geography = "msoa")
-lines = lines %>% 
+# Do either get_pct or get_pct_lines include intrazonal flows?
+# should we use get_od?
+od = get_pct(region = "north-east", purpose = "commute", geography = "msoa", layer = "l")
+lines = od %>% 
   filter(lad_name1 == "Newcastle upon Tyne" | lad_name1 == "Sunderland" | 
            lad_name1 == "Gateshead" | lad_name1 == "North Tyneside" |  
            lad_name1 =="South Tyneside" | lad_name2 == "Newcastle upon Tyne" | 
            lad_name2 == "Sunderland" | lad_name2 == "Gateshead" | 
            lad_name2 == "North Tyneside" |  lad_name2 =="South Tyneside"
          )
+lines = lines[, c(2:length(lines), 1)]
 tm_shape(lines) + tm_lines()
 
 lines_foot = lines %>% 
@@ -72,6 +75,19 @@ tm_shape(car_osrm) + tm_lines("car_driver")
 
 min_distance_meters = 500
 disag_threshold = 50
+
+# Why do we get this error?
+# Error in UseMethod("st_write") : 
+#   no applicable method for 'st_write' applied to an object of class "NULL"
+od_foot_jittered = odjitter::jitter(
+  od = lines_foot,
+  zones = northeast,
+  zone_name_key = "geo_code",
+  # subpoints = osm_foot,
+  disaggregation_threshold = disag_threshold,
+  disaggregation_key = "foot",
+  min_distance_meters = min_distance_meters
+) 
 
 osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
 
