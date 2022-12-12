@@ -5,7 +5,7 @@ library(tmap)
 library(tidyverse)
 tmap_mode("view")
 
-northeast = get_pct_zones("north-east")
+northeast = get_pct_zones("north-east", geography = "msoa")
 tyneandwear = northeast %>% 
   filter(lad_name == "Newcastle upon Tyne" | lad_name == "Sunderland" | 
            lad_name == "Gateshead" | lad_name == "North Tyneside" |  
@@ -27,17 +27,20 @@ lines_tyneandwear = lines %>%
          )
 tm_shape(lines_tyneandwear) + tm_lines()
 
-lines_foot = lines_tyneandwear %>% 
+lines_matching = lines_tyneandwear %>% 
+  filter(geo_code1 %in% northeast$geo_code & geo_code2 %in% northeast$geo_code)
+
+lines_foot = lines_matching %>% 
   filter(foot > 0) %>% 
   # select(-c(car_driver:ebike_sico2), -bicycle) %>% 
   select(geo_code1, geo_code2, foot)
 
-lines_bicycle = lines_tyneandwear %>% 
+lines_bicycle = lines_matching %>% 
   filter(bicycle > 0) %>% 
   # select(-c(foot:ebike_sico2)) %>% 
   select(geo_code1, geo_code2, bicycle)
 
-lines_car = lines_tyneandwear %>% 
+lines_car = lines_matching %>% 
   filter(car_driver > 0) %>% 
   # select(-bicycle, -foot, -c(govtarget_slc:ebike_sico2)) %>% 
   select(geo_code1, geo_code2, car_driver)
@@ -46,7 +49,7 @@ lines_car = lines_tyneandwear %>%
 # Unjittered routes ------------------------------------------------------
 
 library(stplanr)
-# coords = od_coords(lines_tyneandwear)
+# coords = od_coords(lines_matching)
 # from = coords[, 1:2]
 # to = coords[, 3:4]
 # routes_osrm = route_osrm(from = from, to = to, osrm.profile = "foot") # not working]
@@ -120,6 +123,7 @@ od_car_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
+saveRDS(od_car_jittered, "data/od_car_jittered.Rds")
 
 # Route networks ----------------------------------------------------------
 
