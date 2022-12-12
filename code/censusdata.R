@@ -51,34 +51,34 @@ lines_car = lines_matching %>%
 
 # Unjittered routes ------------------------------------------------------
 
-# coords = od_coords(lines_matching)
-# from = coords[, 1:2]
-# to = coords[, 3:4]
-# routes_osrm = route_osrm(from = from, to = to, osrm.profile = "foot") # not working]
-
-# Only does one route at a time
-# library(osrm)
-# from = as.data.frame(from)
-# to = as.data.frame(to)
-# r_osrm = osrmRoute(src = from, dst = to, osrm.server = "https://routing.openstreetmap.de/", 
-#                    osrm.profile = "foot")
-
-foot_osrm = route(l = lines_foot, route_fun = route_osrm) # default routing profile is "foot"
-bicycle_osrm = route(l = lines_bicycle, route_fun = route_osrm, osrm.profile = "bike")
-car_osrm = route(l = lines_car, route_fun = route_osrm, osrm.profile = "car")
-
-saveRDS(foot_osrm, "data/foot_osrm.Rds")
-saveRDS(bicycle_osrm, "data/bicycle_osrm.Rds")
-saveRDS(car_osrm, "data/car_osrm.Rds")
-
-foot_osrm = readRDS("data/foot_osrm.Rds")
-bicycle_osrm = readRDS("data/bicycle_osrm.Rds")
-car_osrm = readRDS("data/car_osrm.Rds")
-
-# foot_some = head(foot_osrm)
-tm_shape(foot_osrm) + tm_lines("foot")
-tm_shape(bicycle_osrm) + tm_lines("bicycle")
-tm_shape(car_osrm) + tm_lines("car_driver")
+# # coords = od_coords(lines_matching)
+# # from = coords[, 1:2]
+# # to = coords[, 3:4]
+# # routes_osrm = route_osrm(from = from, to = to, osrm.profile = "foot") # not working]
+# 
+# # Only does one route at a time
+# # library(osrm)
+# # from = as.data.frame(from)
+# # to = as.data.frame(to)
+# # r_osrm = osrmRoute(src = from, dst = to, osrm.server = "https://routing.openstreetmap.de/", 
+# #                    osrm.profile = "foot")
+# 
+# foot_osrm = route(l = lines_foot, route_fun = route_osrm) # default routing profile is "foot"
+# bicycle_osrm = route(l = lines_bicycle, route_fun = route_osrm, osrm.profile = "bike")
+# car_osrm = route(l = lines_car, route_fun = route_osrm, osrm.profile = "car")
+# 
+# saveRDS(foot_osrm, "data/foot_osrm.Rds")
+# saveRDS(bicycle_osrm, "data/bicycle_osrm.Rds")
+# saveRDS(car_osrm, "data/car_osrm.Rds")
+# 
+# foot_osrm = readRDS("data/foot_osrm.Rds")
+# bicycle_osrm = readRDS("data/bicycle_osrm.Rds")
+# car_osrm = readRDS("data/car_osrm.Rds")
+# 
+# # foot_some = head(foot_osrm)
+# tm_shape(foot_osrm) + tm_lines("foot")
+# tm_shape(bicycle_osrm) + tm_lines("bicycle")
+# tm_shape(car_osrm) + tm_lines("car_driver")
 
 
 # Jittered routes ---------------------------------------------------------
@@ -148,19 +148,16 @@ tm_shape(car_osrm) + tm_lines("car_driver")
 
 
 # Route networks ----------------------------------------------------------
+# car_line = st_cast(car_osrm$geometry, "LINESTRING")
+# car_osrm$geometry = car_line
 
-foot_rnet = overline(foot_osrm, attrib = "foot")
-bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle") # error
-# 2022-12-07 11:35:36 constructing segments
-# 2022-12-07 11:35:39 building geometry
-# |++++++++++++++++++++++++++++++++++++++++++++++++++| 100% elapsed=01s  
-# 2022-12-07 11:35:41 simplifying geometry
-# large data detected, using regionalisation, nrow = 106771
-# Error in FUN(X[[i]], ...) : subscript out of bounds
+foot_rnet = overline(foot_osrm, attrib = "foot", regionalise = 1e+07)
+bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle", regionalise = 1e+07)
 car_rnet = overline(
   car_osrm, 
   # attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
-  attrib = "car_driver"
+  attrib = "car_driver",
+  regionalise = 1e+07
   )
 
 saveRDS(foot_rnet, "data/foot_rnet.Rds")
