@@ -3,17 +3,20 @@
 library(pct)
 library(tmap)
 library(tidyverse)
+library(stplanr)
 tmap_mode("view")
 
 northeast = get_pct_zones("north-east", geography = "msoa")
+northumberland = get_pct_zones("northumberland", geography = "msoa")
+wider_northeast = bind_rows(northeast, northumberland)
+wider_northeast = wider_northeast %>% 
+  select(geo_code)
+
 tyneandwear = northeast %>% 
   filter(lad_name == "Newcastle upon Tyne" | lad_name == "Sunderland" | 
            lad_name == "Gateshead" | lad_name == "North Tyneside" |  
            lad_name =="South Tyneside")
 tm_shape(tyneandwear) + tm_polygons()
-
-northeast = northeast %>% 
-  select(geo_code)
 
 # Do either get_pct or get_pct_lines include intrazonal flows?
 # should we use get_od?
@@ -28,7 +31,7 @@ lines_tyneandwear = lines %>%
 tm_shape(lines_tyneandwear) + tm_lines()
 
 lines_matching = lines_tyneandwear %>% 
-  filter(geo_code1 %in% northeast$geo_code & geo_code2 %in% northeast$geo_code)
+  filter(geo_code1 %in% wider_northeast$geo_code & geo_code2 %in% wider_northeast$geo_code)
 
 lines_foot = lines_matching %>% 
   filter(foot > 0) %>% 
@@ -48,7 +51,6 @@ lines_car = lines_matching %>%
 
 # Unjittered routes ------------------------------------------------------
 
-library(stplanr)
 # coords = od_coords(lines_matching)
 # from = coords[, 1:2]
 # to = coords[, 3:4]
@@ -83,6 +85,7 @@ tm_shape(car_osrm) + tm_lines("car_driver")
 
 min_distance_meters = 500
 disag_threshold = 50
+set.seed(42)
 
 osm_foot = readRDS("data/osm_foot_2022-12-07.Rds")
 
@@ -91,7 +94,7 @@ osm_foot = readRDS("data/osm_foot_2022-12-07.Rds")
 #   no applicable method for 'st_write' applied to an object of class "NULL"
 od_foot_jittered = odjitter::jitter(
   od = lines_foot,
-  zones = northeast,
+  zones = wider_northeast,
   # zone_name_key = "geo_code",
   subpoints = osm_foot,
   disaggregation_threshold = disag_threshold,
@@ -103,7 +106,7 @@ osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
 
 od_bicycle_jittered = odjitter::jitter(
   od = lines_bicycle,
-  zones = northeast,
+  zones = wider_northeast,
   # zone_name_key = "geo_code",
   subpoints = osm_cycle,
   disaggregation_threshold = disag_threshold,
@@ -115,7 +118,7 @@ osm_drive = readRDS("data/osm_drive_2022-12-07.Rds")
 
 od_car_jittered = odjitter::jitter(
   od = lines_car,
-  zones = northeast,
+  zones = wider_northeast,
   zone_name_key = "geo_code",
   subpoints = osm_drive,
   disaggregation_threshold = disag_threshold,
@@ -123,7 +126,26 @@ od_car_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
+saveRDS(od_foot_jittered, "data/od_foot_jittered.Rds")
+saveRDS(od_bicycle_jittered, "data/od_bicycle_jittered.Rds")
 saveRDS(od_car_jittered, "data/od_car_jittered.Rds")
+
+foot_osrm = route(l = od_foot_jittered, route_fun = route_osrm) # default routing profile is "foot"
+bicycle_osrm = route(l = od_bicycle_jittered, route_fun = route_osrm, osrm.profile = "bike")
+car_osrm = route(l = od_car_jittered, route_fun = route_osrm, osrm.profile = "car")
+
+saveRDS(foot_osrm, "data/foot_jittered_osrm.Rds")
+saveRDS(bicycle_osrm, "data/bicycle_jittered_osrm.Rds")
+saveRDS(car_osrm, "data/car_jittered_osrm.Rds")
+
+foot_osrm = readRDS("data/foot_jittered_osrm.Rds")
+bicycle_osrm = readRDS("data/bicycle_jittered_osrm.Rds")
+car_osrm = readRDS("data/car_jittered_osrm.Rds")
+
+tm_shape(foot_osrm) + tm_lines("foot")
+tm_shape(bicycle_osrm) + tm_lines("bicycle")
+tm_shape(car_osrm) + tm_lines("car_driver")
+
 
 # Route networks ----------------------------------------------------------
 
@@ -135,9 +157,11 @@ bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle") # error
 # 2022-12-07 11:35:41 simplifying geometry
 # large data detected, using regionalisation, nrow = 106771
 # Error in FUN(X[[i]], ...) : subscript out of bounds
-car_rnet = overline(car_osrm, 
-                    attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
-                    )
+car_rnet = overline(
+  car_osrm, 
+  # attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
+  attrib = "car_driver"
+  )
 
 saveRDS(foot_rnet, "data/foot_rnet.Rds")
 saveRDS(bicycle_rnet, "data/bicycle_rnet.Rds")
