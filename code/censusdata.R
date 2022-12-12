@@ -12,38 +12,41 @@ tyneandwear = northeast %>%
            lad_name =="South Tyneside")
 tm_shape(tyneandwear) + tm_polygons()
 
+northeast = northeast %>% 
+  select(geo_code)
+
 # Do either get_pct or get_pct_lines include intrazonal flows?
 # should we use get_od?
-od = get_pct(region = "north-east", purpose = "commute", geography = "msoa", layer = "l")
-lines = od %>% 
+lines = get_pct(region = "north-east", purpose = "commute", geography = "msoa", layer = "l")
+lines_tyneandwear = lines %>% 
   filter(lad_name1 == "Newcastle upon Tyne" | lad_name1 == "Sunderland" | 
            lad_name1 == "Gateshead" | lad_name1 == "North Tyneside" |  
            lad_name1 =="South Tyneside" | lad_name2 == "Newcastle upon Tyne" | 
            lad_name2 == "Sunderland" | lad_name2 == "Gateshead" | 
            lad_name2 == "North Tyneside" |  lad_name2 =="South Tyneside"
          )
-lines = lines[, c(2:length(lines), 1)]
-tm_shape(lines) + tm_lines()
+tm_shape(lines_tyneandwear) + tm_lines()
 
-lines_foot = lines %>% 
+lines_foot = lines_tyneandwear %>% 
   filter(foot > 0) %>% 
-  select(-c(car_driver:ebike_sico2), -bicycle)
-lines_foot = lines_foot %>% 
+  # select(-c(car_driver:ebike_sico2), -bicycle) %>% 
   select(geo_code1, geo_code2, foot)
 
-lines_bicycle = lines %>% 
+lines_bicycle = lines_tyneandwear %>% 
   filter(bicycle > 0) %>% 
-  select(-c(foot:ebike_sico2))
+  # select(-c(foot:ebike_sico2)) %>% 
+  select(geo_code1, geo_code2, bicycle)
 
-lines_car = lines %>% 
+lines_car = lines_tyneandwear %>% 
   filter(car_driver > 0) %>% 
-  select(-bicycle, -foot, -c(govtarget_slc:ebike_sico2))
+  # select(-bicycle, -foot, -c(govtarget_slc:ebike_sico2)) %>% 
+  select(geo_code1, geo_code2, car_driver)
 
 
 # Unjittered routes ------------------------------------------------------
 
 library(stplanr)
-# coords = od_coords(lines)
+# coords = od_coords(lines_tyneandwear)
 # from = coords[, 1:2]
 # to = coords[, 3:4]
 # routes_osrm = route_osrm(from = from, to = to, osrm.profile = "foot") # not working]
@@ -78,8 +81,7 @@ tm_shape(car_osrm) + tm_lines("car_driver")
 min_distance_meters = 500
 disag_threshold = 50
 
-northeast = northeast %>% 
-  select(geo_code)
+osm_foot = readRDS("data/osm_foot_2022-12-07.Rds")
 
 # Why do we get this error?
 # Error in UseMethod("st_write") : 
@@ -88,7 +90,7 @@ od_foot_jittered = odjitter::jitter(
   od = lines_foot,
   zones = northeast,
   # zone_name_key = "geo_code",
-  subpoints = osm_drive,
+  subpoints = osm_foot,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "foot",
   min_distance_meters = min_distance_meters
@@ -112,6 +114,7 @@ od_car_jittered = odjitter::jitter(
   od = lines_car,
   zones = northeast,
   zone_name_key = "geo_code",
+  subpoints = osm_drive,
   disaggregation_threshold = disag_threshold,
   disaggregation_key = "car_driver",
   min_distance_meters = min_distance_meters
