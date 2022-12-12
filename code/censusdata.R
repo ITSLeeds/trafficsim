@@ -160,13 +160,13 @@ car_rnet = overline(
   regionalise = 1e+07
   )
 
-saveRDS(foot_rnet, "data/foot_rnet.Rds")
-saveRDS(bicycle_rnet, "data/bicycle_rnet.Rds")
-saveRDS(car_rnet, "data/car_rnet.Rds")
+saveRDS(foot_rnet, "data/foot_rnet_jittered.Rds")
+saveRDS(bicycle_rnet, "data/bicycle_rnet_jittered.Rds")
+saveRDS(car_rnet, "data/car_rnet_jittered.Rds")
 
-foot_rnet = readRDS("data/foot_rnet.Rds")
-bicycle_rnet = readRDS("data/bicycle_rnet.Rds")
-car_rnet = readRDS("data/car_rnet.Rds")
+foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
+bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
+car_rnet = readRDS("data/car_rnet_jittered.Rds")
 
 tm_shape(foot_rnet) + tm_lines("foot")
 tm_shape(bicycle_rnet) + tm_lines("bicycle")
