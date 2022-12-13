@@ -20,12 +20,37 @@ max_trip_duration_min = max_trip_duration_hrs * 60
 # r5_network = r5r::street_network_to_sf(r5r_core = r5r_core)
 # saveRDS(r5_network$edges, "r5_network_edges.Rds")
 remotes::install_github("robinlovelace/router")
+
+start_time = Sys.time()
 routes = router::route(desire_lines, route_fun = detailed_itineraries,
                        r5r_core = r5r_core,
                        max_trip_duration = max_trip_duration_min,
                        mode = mode, shortest_path = FALSE, 
                        verbose = FALSE, progress = TRUE)
-list(r5_network = r5_network, routes = routes)
+# list(r5_network = r5_network, routes = routes)
+end_time = Sys.time()
 routes %>% 
   sample_n(99) %>% 
   mapview::mapview()
+
+timings = data.frame(
+  start = start_time,
+  end = end_time,
+  n_routes = nrow(routes),
+  duration = round(as.numeric(end_time) - as.numeric(start_time)),
+  duration_min = round((as.numeric(end_time) - as.numeric(start_time))/60),
+  routes_per_s = round(nrow(routes) / (round(as.numeric(end_time) - as.numeric(start_time))), 3)
+)
+
+start_time = Sys.time()
+routes2 = stplanr::route(l = desire_lines, route_fun = route_osrm, osrm.profile = "car")
+end_time = Sys.time()
+
+timings2 = data.frame(
+  start = start_time,
+  end = end_time,
+  n_routes = nrow(routes),
+  duration = round(as.numeric(end_time) - as.numeric(start_time)),
+  duration_min = round((as.numeric(end_time) - as.numeric(start_time))/60),
+  routes_per_s = round(nrow(routes) / (round(as.numeric(end_time) - as.numeric(start_time))), 3)
+)
