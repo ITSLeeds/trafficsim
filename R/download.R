@@ -43,6 +43,7 @@ download_urban_data = function(
     url_is_ok = crul::ok(u)
     if(url_is_ok) {
       download.file(u, f)
+      unzip(f, exdir = download_directory)
     } else {
       message("URL missing: ", u)
     }
