@@ -46,8 +46,6 @@ list(
     #   group_by(Count_date) %>% 
     #   summarise(n = n())
   }),
-  
-# Urban Observatory data -------------------------------------------------
   tar_target(download, {
     # period data:
     periods = paste0("2021-", 1:12)
@@ -61,11 +59,7 @@ list(
     #   download_urban_data(period = i, dataset = "People%20Count")
     #   download_urban_data(period = i, dataset = "People%20Count")
     # }
-  })
-,
-
-
-  
+  }),
   tar_target(car_count_2021, {
     # hourly aggregated
     f = "data/uo-newcastle/2021-1-Car%20Count.csv"
@@ -76,7 +70,29 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
-  })
+  }),
+  # tar_target(walking_routes, {
+  #   remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
+  #   options(java.parameters = "-Xmx40G")
+  #   library(r5r)
+  #   rJava::.jinit()
+  #   wyca_match = osmextract::oe_match(place = "West Yorkshire")
+  #   osmextract::oe_download(file_url = wyca_match$url, download_directory = "data_r5")
+  #   r5r_core = r5r::setup_r5(data_path = "data_r5")
+  #   mode = c("WALK")
+  #   max_distance = 10
+  #   max_trip_duration_hrs = max_distance / 3.6
+  #   max_trip_duration_min = max_trip_duration_hrs * 60
+  #   r5_network = r5r::street_network_to_sf(r5r_core = r5r_core)
+  #   saveRDS(r5_network$edges, "r5_network_edges.Rds")
+  #   routes = router::route(od_jittered, route_fun = detailed_itineraries,
+  #                          max_lts = 2, r5r_core = r5r_core,
+  #                          max_trip_duration = max_trip_duration_min,
+  #                          mode = mode, shortest_path = FALSE, 
+  #                          verbose = FALSE, progress = TRUE)
+  #   list(r5_network = r5_network, routes = routes)
+  #   
+  # })
 # ,
   # # The linestring WKT geometries are not being shown correctly in the csv files
   # # this needs editing by hand or new code
