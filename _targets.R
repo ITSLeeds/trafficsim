@@ -62,14 +62,18 @@ list(
   }),
   tar_target(car_count_2021, {
     # hourly aggregated
-    f = "data/uo-newcastle/2021-1-Car%20Count.csv"
-    unzip(zipfile = "data/uo-newcastle", files = "2021-1-Car%20Count.csv")
-    car_count_2021 = read_csv("data/uo-newcastle/2021-3600-Car Count.csv")
+    car_count_2021 = read_csv("data/2021-1-Car Count.csv")
     # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
     # car_count_2021 %>%
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
+  })
+, 
+tar_target(car_sum, {
+  car_sum = car_count_2021 %>% 
+    group_by(`Sensor Name`) %>% 
+    summarise(cars = sum(Value))
   }),
   # tar_target(walking_routes, {
   #   remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
