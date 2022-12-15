@@ -73,7 +73,9 @@ list(
 tar_target(car_sum, {
   car_sum = car_count_2021 %>% 
     group_by(`Sensor Name`) %>% 
-    summarise(cars = sum(Value))
+    summarise(cars = sum(Value),
+              n = n(),
+              mean_cars = mean(`Mean Value`))
   }),
   # tar_target(walking_routes, {
   #   remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
