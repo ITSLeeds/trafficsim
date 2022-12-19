@@ -4,6 +4,7 @@ library(pct)
 library(tmap)
 library(tidyverse)
 library(stplanr)
+library(sf)
 tmap_mode("view")
 
 northeast = get_pct_zones("north-east", geography = "msoa")
@@ -189,3 +190,16 @@ tm_shape(car_rnet) + tm_lines("car_driver")
 #   subpoints = road_network,
 #   disaggregation_threshold = 50
 # )
+
+
+# Validation --------------------------------------------------------------
+
+car_count_2021 = read_csv("data/2021-1-Car Count.csv")
+car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
+
+
+tm_shape(car_rnet) + tm_lines("car_driver") + 
+  tm_shape(car_count_2021) + tm_dots()
+
+rnet_refs = st_nearest_feature(x = car_count_2021, y = car_rnet)
+rnet_feats = car_rnet[rnet_refs, ]

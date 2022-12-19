@@ -50,7 +50,7 @@ list(
     # period data:
     periods = paste0("2021-", 1:12)
     for(i in periods) {
-      download_urban_data(period = i, dataset = "People%20Count")
+      download_urban_data(period = i, dataset = "Traffic%20Flow")
       # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
       download_urban_data(period = i, dataset = "Car%20Count")
     }
@@ -68,8 +68,16 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
-  })
-, 
+  }), 
+  tar_target(traffic_flow_2021, {
+    # hourly aggregated
+    traffic_flow_2021 = read_csv("data/2021-1-Traffic Flow.csv")
+    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+    # car_count_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
+  }), 
 tar_target(car_sum, {
   car_sum = car_count_2021 %>% 
     group_by(`Sensor Name`) %>% 
