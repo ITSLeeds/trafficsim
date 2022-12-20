@@ -50,9 +50,10 @@ list(
     # period data:
     periods = paste0("2021-", 1:12)
     for(i in periods) {
-      download_urban_data(period = i, dataset = "Traffic%20Flow")
+      download_urban_data(period = i, dataset = "Average%20Speed")
       # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
       download_urban_data(period = i, dataset = "Car%20Count")
+      download_urban_data(period = i, dataset = "Congestion")
     }
     # years = as.character(2019:2021)
     # for(i in years) {
@@ -78,13 +79,30 @@ list(
     #   summarise(n = n())
     traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
   }), 
+  tar_target(average_speed_2021, {
+    # hourly aggregated
+    average_speed_2021 = read_csv("data/2021-1-Average Speed.csv")
+    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+    # car_count_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    average_speed_2021 = st_as_sf(average_speed_2021, wkt = "Location (WKT)")
+  }), 
+  tar_target(congestion_2021, {
+    # hourly aggregated
+    congestion_2021 = read_csv("data/2021-1-Congestion.csv")
+    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+    # car_count_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    congestion_2021 = st_as_sf(congestion_2021, wkt = "Location (WKT)")
+  }), 
 tar_target(car_sum, {
   car_sum = car_count_2021 %>% 
     group_by(`Sensor Name`) %>% 
     summarise(cars = sum(Value),
-              n = n(),
-              mean_cars = mean(`Mean Value`))
-  }),
+              n = n())
+  })
   # tar_target(walking_routes, {
   #   remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
   #   options(java.parameters = "-Xmx40G")
@@ -167,4 +185,4 @@ tar_target(car_sum, {
   # })
 )
 
-
+# tm_shape(car_sum) + tm_dots("cars")
