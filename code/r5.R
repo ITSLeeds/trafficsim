@@ -5,7 +5,7 @@ system("gh release download 0.1")
 desire_lines = readRDS("od_car_jittered.Rds")
 
 remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
-options(java.parameters = "-Xmx40G")
+options(java.parameters = '-Xmx40G')
 library(r5r)
 rJava::.jinit()
 # View(osmextract::geofabrik_zones)
