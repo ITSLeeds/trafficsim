@@ -2,7 +2,7 @@
 
 library(tidyverse)
 system("gh release download 0.1")
-desire_lines = readRDS("od_car_jittered.Rds")
+desire_lines = readRDS("data/od_car_jittered.Rds")
 
 remotes::install_github("ipeaGIT/r5r", subdir = "r-package")
 options(java.parameters = '-Xmx40G')
