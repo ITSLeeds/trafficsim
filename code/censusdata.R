@@ -88,7 +88,7 @@ min_distance_meters = 500
 disag_threshold = 50
 set.seed(42)
 
-osm_foot = readRDS("data/osm_foot_2022-12-07.Rds")
+osm_foot = readRDS("data/osm_foot_2023-01-11.Rds")
 
 # Why do we get this error?
 # Error in UseMethod("st_write") : 
@@ -103,7 +103,7 @@ od_foot_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
-osm_cycle = readRDS("data/osm_cycle_2022-12-07.Rds")
+osm_cycle = readRDS("data/osm_cycle_2023-01-11.Rds")
 
 od_bicycle_jittered = odjitter::jitter(
   od = lines_bicycle,
@@ -115,7 +115,7 @@ od_bicycle_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
-osm_drive = readRDS("data/osm_drive_2022-12-07.Rds")
+osm_drive = readRDS("data/osm_drive_2023-01-11.Rds")
 
 od_car_jittered = odjitter::jitter(
   od = lines_car,

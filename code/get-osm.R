@@ -55,7 +55,8 @@ osm_lines %>%
   sample_n(500) %>% 
   qtm()
 
-to_exclude = "motorway|trunk|services|bridleway|disused|emergency|escap|far|foot|path|pedestrian|rest|road|track"
+unique(osm_lines$highway)
+to_exclude = "motorway|motorway_link|services|bridleway|disused|emergency|escap|far|foot|path|pedestrian|rest|road|track"
 
 
 osm_highways = osm_lines %>%
@@ -63,8 +64,8 @@ osm_highways = osm_lines %>%
 
 
 dim(osm_highways) 
-# [1] 137103    30
-saveRDS(osm_highways, "data/osm_cycle_2022-12-07.Rds") # 100 MB file
+# [1] 142142     30
+saveRDS(osm_highways, "data/osm_cycle_2023-01-11.Rds") # 100 MB file
 
 
 # Driving -----------------------------------------------------------------
@@ -112,17 +113,18 @@ osm_lines %>%
   sample_n(500) %>% 
   qtm()
 
-to_exclude = "services|bridleway|disused|emergency|escap|far|foot|path|pedestrian|rest|road|track"
+unique(osm_lines$highway)
+to_exclude = "services|bridleway|disused|emergency|escap|far|foot|path|pedestrian|rest|road|track|bus_guideway|raceway|busway|cycleway"
 
 osm_highways = osm_lines %>%
   filter(!str_detect(string = highway, pattern = to_exclude))
 
 
 dim(osm_highways) 
-# [1] 138152    20
+# [1] 138433    20
 
 # tm_shape(osm_highways) + tm_lines()
-saveRDS(osm_highways, "data/osm_drive_2022-12-07.Rds") # 100 MB file
+saveRDS(osm_highways, "data/osm_drive_2023-01-11.Rds") # 12.6 MB file
 
 # Walking -----------------------------------------------------------------
 
@@ -166,15 +168,15 @@ osm_lines %>%
   qtm()
 osm_lines %>%
   filter(highway == "trunk") %>%
-  sample_n(500) %>% 
   qtm()
 
-to_exclude = "motorway|trunk|services|disused|emergency|escap|far|rest"
+unique(osm_lines$highway)
+to_exclude = "motorway|motorway_link|disused|emergency|escap|far|bus_guideway|raceway|busway"
 
 osm_highways = osm_lines %>%
   filter(!str_detect(string = highway, pattern = to_exclude))
 
 dim(osm_highways) 
-# [1] 210700     20
-saveRDS(osm_highways, "data/osm_foot_2022-12-07.Rds") # 100 MB file
+# [1] 216351     20
+saveRDS(osm_highways, "data/osm_foot_2023-01-11.Rds") # 100 MB file
 
