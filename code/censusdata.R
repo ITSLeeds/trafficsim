@@ -82,7 +82,7 @@ lines_car = lines_matching %>%
 # tm_shape(car_osrm) + tm_lines("car_driver")
 
 
-# Jittered routes ---------------------------------------------------------
+# Jittered OD pairs ------------------------------------------------------
 
 min_distance_meters = 500
 disag_threshold = 50
@@ -90,7 +90,7 @@ set.seed(42)
 
 osm_foot = readRDS("data/osm_foot_2023-01-11.Rds")
 
-# Why do we get this error?
+# Previous error when subpoints were incorrect:
 # Error in UseMethod("st_write") : 
 #   no applicable method for 'st_write' applied to an object of class "NULL"
 od_foot_jittered = odjitter::jitter(
@@ -131,21 +131,24 @@ saveRDS(od_foot_jittered, "data/od_foot_jittered.Rds")
 saveRDS(od_bicycle_jittered, "data/od_bicycle_jittered.Rds")
 saveRDS(od_car_jittered, "data/od_car_jittered.Rds")
 
-foot_osrm = route(l = od_foot_jittered, route_fun = route_osrm) # default routing profile is "foot"
-bicycle_osrm = route(l = od_bicycle_jittered, route_fun = route_osrm, osrm.profile = "bike")
-car_osrm = route(l = od_car_jittered, route_fun = route_osrm, osrm.profile = "car")
 
-saveRDS(foot_osrm, "data/foot_jittered_osrm.Rds")
-saveRDS(bicycle_osrm, "data/bicycle_jittered_osrm.Rds")
-saveRDS(car_osrm, "data/car_jittered_osrm.Rds")
+# Routing the jittered OD with OSRM (plan to use OTP instead) --------------
 
-foot_osrm = readRDS("data/foot_jittered_osrm.Rds")
-bicycle_osrm = readRDS("data/bicycle_jittered_osrm.Rds")
-car_osrm = readRDS("data/car_jittered_osrm.Rds")
-
-tm_shape(foot_osrm) + tm_lines("foot")
-tm_shape(bicycle_osrm) + tm_lines("bicycle")
-tm_shape(car_osrm) + tm_lines("car_driver")
+# foot_osrm = route(l = od_foot_jittered, route_fun = route_osrm) # default routing profile is "foot"
+# bicycle_osrm = route(l = od_bicycle_jittered, route_fun = route_osrm, osrm.profile = "bike")
+# car_osrm = route(l = od_car_jittered, route_fun = route_osrm, osrm.profile = "car")
+# 
+# saveRDS(foot_osrm, "data/foot_jittered_osrm.Rds")
+# saveRDS(bicycle_osrm, "data/bicycle_jittered_osrm.Rds")
+# saveRDS(car_osrm, "data/car_jittered_osrm.Rds")
+# 
+# foot_osrm = readRDS("data/foot_jittered_osrm.Rds")
+# bicycle_osrm = readRDS("data/bicycle_jittered_osrm.Rds")
+# car_osrm = readRDS("data/car_jittered_osrm.Rds")
+# 
+# tm_shape(foot_osrm) + tm_lines("foot")
+# tm_shape(bicycle_osrm) + tm_lines("bicycle")
+# tm_shape(car_osrm) + tm_lines("car_driver")
 
 
 # Route networks ----------------------------------------------------------
