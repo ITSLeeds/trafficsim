@@ -1,4 +1,5 @@
 # Test code to demonstrate R5 (needs R5 installed on the computer that runs this code)
+# This script must be run in the atumscott repo
 
 library(tidyverse)
 system("gh release download 0.1")
