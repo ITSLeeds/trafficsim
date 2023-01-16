@@ -1,11 +1,16 @@
+# OTP setup ---------------------------------------------------------------
+
+library(opentripplanner)
+
+# Check Java
+otp_check_java()
+
 # For ubuntu:
 # in terminal switch to java 8 (and switch back again afterwards?)
 # sudo update-java-alternatives --set /usr/lib/jvm/java-1.8.0-openjdk-amd64
 
 # to switch back to Java 11:
 # sudo update-java-alternatives --set /usr/lib/jvm/java-1.11.0-openjdk-amd64
-
-# OTP setup ---------------------------------------------------------------
 
 path_data = file.path("OTP")
 dir.create(path_data)
