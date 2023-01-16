@@ -43,10 +43,20 @@ path_otp = otp_dl_jar(path_data, cache = FALSE)
 # Tyne and Wear -----------------------------------------------------------
 
 # Build OTP graph
-log1 = otp_build_graph(otp = path_otp, dir = path_data)
+log1 = otp_build_graph(otp = path_otp, 
+                       dir = path_data, 
+                       router = "tyne-and-wear",
+                       memory = 8192
+                       )
 # Launch OTP
 log2 = otp_setup(otp = path_otp, dir = path_data, router = "tyne-and-wear")
 # Connect to OTP
 otpcon = otp_connect(hostname = "localhost",
                      router = "tyne-and-wear")
+# Get routes
+route = otp_plan(otpcon,
+                 fromPlace = c(-1.617, 54.978),
+                 toPlace = c(-1.384, 54.907)
+                 )
+qtm(route)
 otp_stop()
