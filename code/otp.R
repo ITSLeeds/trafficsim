@@ -42,6 +42,9 @@ path_otp = otp_dl_jar(path_data, cache = FALSE)
 
 # Tyne and Wear -----------------------------------------------------------
 
+# Currently only works for routes wholly within Tyne and Wear
+# I need to add in OSM data for Durham and Northumberland
+
 # Build OTP graph
 log1 = otp_build_graph(otp = path_otp, 
                        dir = path_data, 
@@ -54,9 +57,29 @@ log2 = otp_setup(otp = path_otp, dir = path_data, router = "tyne-and-wear")
 otpcon = otp_connect(hostname = "localhost",
                      router = "tyne-and-wear")
 # Get routes
+# route = otp_plan(otpcon,
+#                  fromPlace = c(-1.617, 54.978),
+#                  toPlace = c(-1.384, 54.907)
+#                  )
+desire_lines = readRDS("data/od_car_jittered.Rds")
+library(tidyverse)
+des_top = desire_lines %>% sample_n(5)
+# o = lwgeom::st_startpoint(des_top)
+# d = lwgeom::st_endpoint(des_top)
+library(sf)
+od = st_coordinates(des_top)
+od = od[,-3]
+# o = od %>% filter(row_number() %% 2 == 1)
+# d = od %>% filter(row_number() %% 2 == 0)
+even_indexes<-seq(2,10,2)
+odd_indexes<-seq(1,9,2)
+o = od[odd_indexes,]
+d = od[even_indexes,]
 route = otp_plan(otpcon,
-                 fromPlace = c(-1.617, 54.978),
-                 toPlace = c(-1.384, 54.907)
+                 fromPlace = o,
+                 toPlace = d
                  )
+qtm(des_top)
 qtm(route)
+
 otp_stop()
