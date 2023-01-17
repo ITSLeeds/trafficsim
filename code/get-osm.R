@@ -121,10 +121,11 @@ osm_highways = osm_lines %>%
 
 
 dim(osm_highways) 
-# [1] 138433    20
+# [1] 138569    20
 
 # tm_shape(osm_highways) + tm_lines()
-saveRDS(osm_highways, "data/osm_drive_2023-01-11.Rds") # 12.6 MB file
+
+saveRDS(osm_highways, "data/osm_drive_2023-01-17.Rds") # 12.6 MB file
 
 # Walking -----------------------------------------------------------------
 
