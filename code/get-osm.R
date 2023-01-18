@@ -64,8 +64,8 @@ osm_highways = osm_lines %>%
 
 
 dim(osm_highways) 
-# [1] 142142     30
-saveRDS(osm_highways, "data/osm_cycle_2023-01-11.Rds") # 100 MB file
+# [1] 142247     30
+saveRDS(osm_highways, "data/osm_cycle_2023-01-17.Rds") # 13 MB file
 
 
 # Driving -----------------------------------------------------------------
@@ -178,6 +178,6 @@ osm_highways = osm_lines %>%
   filter(!str_detect(string = highway, pattern = to_exclude))
 
 dim(osm_highways) 
-# [1] 216351     20
-saveRDS(osm_highways, "data/osm_foot_2023-01-11.Rds") # 100 MB file
+# [1] 214893     20
+saveRDS(osm_highways, "data/osm_foot_2023-01-17.Rds") # 21 MB file
 
