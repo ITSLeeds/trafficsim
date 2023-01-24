@@ -17,7 +17,7 @@ tyneandwear = northeast %>%
   filter(lad_name == "Newcastle upon Tyne" | lad_name == "Sunderland" | 
            lad_name == "Gateshead" | lad_name == "North Tyneside" |  
            lad_name =="South Tyneside")
-tm_shape(tyneandwear) + tm_polygons()
+# tm_shape(tyneandwear) + tm_polygons()
 
 # Do either get_pct or get_pct_lines include intrazonal flows?
 # should we use get_od?
@@ -29,7 +29,7 @@ lines_tyneandwear = lines %>%
            lad_name2 == "Sunderland" | lad_name2 == "Gateshead" | 
            lad_name2 == "North Tyneside" |  lad_name2 =="South Tyneside"
          )
-tm_shape(lines_tyneandwear) + tm_lines()
+# tm_shape(lines_tyneandwear) + tm_lines()
 
 lines_matching = lines_tyneandwear %>% 
   filter(geo_code1 %in% wider_northeast$geo_code & geo_code2 %in% wider_northeast$geo_code)

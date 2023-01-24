@@ -3,6 +3,8 @@
 library(opentripplanner)
 library(tmap)
 tmap_mode("view")
+library(sf)
+library(tidyverse)
 
 # Check Java
 otp_check_java()
@@ -62,6 +64,24 @@ osmextract::oe_download(file_url = durham_match$url, download_directory = "data"
 # osmconvert data/geofabrik_tyne-and-wear-latest.osm data/geofabrik_northumberland-latest.osm data/geofabrik_durham-latest.osm -o=data/north-east.osm
 # osmium cat data/north-east.osm -o OTP/graphs/tyne-and-wear/north-east.osm.pbf
 
+# Format OD data for OTP
+desire_lines = readRDS("data/od_car_jittered.Rds")
+desire_lines = tibble::rowid_to_column(desire_lines, "ID")
+# des_top = desire_lines %>% sample_n(5)
+# o = lwgeom::st_startpoint(des_top)
+# d = lwgeom::st_endpoint(des_top)
+od = st_coordinates(desire_lines)
+od = od[,-3]
+# o = od %>% filter(row_number() %% 2 == 1)
+# d = od %>% filter(row_number() %% 2 == 0)
+even = nrow(od)
+odd = nrow(od) - 1
+even_indexes<-seq(2,even,2)
+odd_indexes<-seq(1,odd,2)
+o = od[odd_indexes,]
+d = od[even_indexes,]
+fromID = as.character(desire_lines$ID)
+
 # Build OTP graph
 log1 = otp_build_graph(otp = path_otp, 
                        dir = path_data, 
@@ -78,33 +98,11 @@ otpcon = otp_connect(hostname = "localhost",
 #                  fromPlace = c(-1.617, 54.978),
 #                  toPlace = c(-1.384, 54.907)
 #                  )
-desire_lines = readRDS("data/od_car_jittered.Rds")
-library(tidyverse)
-des_top = desire_lines %>% sample_n(5)
-# o = lwgeom::st_startpoint(des_top)
-# d = lwgeom::st_endpoint(des_top)
-library(sf)
-od = st_coordinates(desire_lines)
-od = od[,-3]
-# o = od %>% filter(row_number() %% 2 == 1)
-# d = od %>% filter(row_number() %% 2 == 0)
-even = if(nrow(od) %% 2 == 0) {
-  nrow(od) 
-} else {
-    nrow(od) - 1 
-}
-odd = if(nrow(od) %% 2 == 1) {
-  nrow(od) 
-} else {
-  nrow(od) - 1 
-}
-even_indexes<-seq(2,even,2)
-odd_indexes<-seq(1,odd,2)
-o = od[odd_indexes,]
-d = od[even_indexes,]
 route = otp_plan(otpcon,
                  fromPlace = o,
-                 toPlace = d
+                 toPlace = d, 
+                 fromID = fromID,
+                 mode = "CAR"
                  )
 # qtm(desire_lines)
 # qtm(route)
