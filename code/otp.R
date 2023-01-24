@@ -106,8 +106,8 @@ route = otp_plan(otpcon,
                  fromPlace = o,
                  toPlace = d
                  )
-qtm(desire_lines)
-qtm(route)
-saveRDS(route, "data/routes_car_otp.Rds")
+# qtm(desire_lines)
+# qtm(route)
+saveRDS(route, "data/routes_car_otp_3_counties.Rds")
 
 otp_stop()
