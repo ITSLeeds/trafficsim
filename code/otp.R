@@ -44,8 +44,12 @@ path_otp = otp_dl_jar(path_data, cache = FALSE)
 # Currently only works for routes wholly within Tyne and Wear
 # I need to add in OSM data for Durham and Northumberland
 
-# Get OSM data
-# Run get-osm.R and save the results in OTP/graphs/tyne-and-wear (drive only)
+# Get OSM data as .osm.pbf and save in OTP directory
+# Previously ran get-osm.R but this creates the wrong file type
+View(osmextract::geofabrik_zones)
+tw_match = osmextract::oe_match(place = "tyne and wear")
+dir.create("OTP/graphs/tyne-and-wear")
+osmextract::oe_download(file_url = tw_match$url, download_directory = "OTP/graphs/tyne-and-wear")
 
 # Build OTP graph
 log1 = otp_build_graph(otp = path_otp, 
