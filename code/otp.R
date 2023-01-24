@@ -49,7 +49,18 @@ path_otp = otp_dl_jar(path_data, cache = FALSE)
 View(osmextract::geofabrik_zones)
 tw_match = osmextract::oe_match(place = "tyne and wear")
 dir.create("OTP/graphs/tyne-and-wear")
-osmextract::oe_download(file_url = tw_match$url, download_directory = "OTP/graphs/tyne-and-wear")
+north_match = osmextract::oe_match("northumberland")
+durham_match = osmextract::oe_match("durham")
+osmextract::oe_download(file_url = tw_match$url, download_directory = "data")
+osmextract::oe_download(file_url = north_match$url, download_directory = "data")
+osmextract::oe_download(file_url = durham_match$url, download_directory = "data")
+
+# Run in terminal after installing osmium and osmconvert:
+# osmium cat data/geofabrik_tyne-and-wear-latest.osm.pbf -o data/geofabrik_tyne-and-wear-latest.osm
+# osmium cat data/geofabrik_northumberland-latest.osm.pbf -o data/geofabrik_northumberland-latest.osm
+# osmium cat data/geofabrik_durham-latest.osm.pbf -o data/geofabrik_durham-latest.osm
+# osmconvert data/geofabrik_tyne-and-wear-latest.osm data/geofabrik_northumberland-latest.osm data/geofabrik_durham-latest.osm -o=data/north-east.osm
+# osmium cat data/north-east.osm -o OTP/graphs/tyne-and-wear/north-east.osm.pbf
 
 # Build OTP graph
 log1 = otp_build_graph(otp = path_otp, 
