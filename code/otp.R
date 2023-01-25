@@ -43,8 +43,8 @@ path_otp = otp_dl_jar(path_data, cache = FALSE)
 
 # Tyne and Wear -----------------------------------------------------------
 
-# Currently only works for routes wholly within Tyne and Wear
-# I need to add in OSM data for Durham and Northumberland
+# Now includes OSM data for Durham and Northumberland
+# But the jittered OD are based on a different set of OSM data, so some routes are being lost 
 
 # Get OSM data as .osm.pbf and save in OTP directory
 # Previously ran get-osm.R but this creates the wrong file type
@@ -104,8 +104,13 @@ route = otp_plan(otpcon,
                  fromID = fromID,
                  mode = "CAR"
                  )
+otp_stop()
 # qtm(desire_lines)
 # qtm(route)
-saveRDS(route, "data/routes_car_otp_3_counties.Rds")
+des = desire_lines %>% 
+  st_drop_geometry() %>% 
+  mutate(ID = as.character(ID))
+route_id = left_join(routes_car_otp, des, by = c("fromPlace" = "ID"))
+saveRDS(route_id, "data/routes_car_otp_3_counties.Rds")
 
-otp_stop()
+

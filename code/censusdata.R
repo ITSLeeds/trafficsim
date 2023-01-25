@@ -155,10 +155,12 @@ saveRDS(od_car_jittered, "data/od_car_jittered.Rds")
 # car_line = st_cast(car_osrm$geometry, "LINESTRING")
 # car_osrm$geometry = car_line
 
+routes_car_otp = readRDS("data/routes_car_otp_3_counties.Rds")
+
 foot_rnet = overline(foot_osrm, attrib = "foot", regionalise = 1e+07)
 bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle", regionalise = 1e+07)
 car_rnet = overline(
-  car_osrm, 
+  routes_car_otp, 
   # attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
   attrib = "car_driver",
   regionalise = 1e+07
@@ -174,7 +176,9 @@ car_rnet = readRDS("data/car_rnet_jittered.Rds")
 
 tm_shape(foot_rnet) + tm_lines("foot")
 tm_shape(bicycle_rnet) + tm_lines("bicycle")
-tm_shape(car_rnet) + tm_lines("car_driver")
+tm_shape(car_rnet) + 
+  tm_lines("car_driver", 
+           breaks = c(0, 500, 1000, 2000, 5000, 15000))
 
 # rnet = get_pct_rnet(region = "north-east", purpose = "commute", geography = "lsoa")
 # rnet = rnet[tyneandwear, ]
