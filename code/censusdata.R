@@ -213,8 +213,10 @@ car_sum = car_count_2021 %>%
             )
 tm_shape(car_sum) + tm_dots("mean_cars")
 
-tm_shape(car_rnet) + tm_lines("car_driver") + 
-  tm_shape(car_sum) + tm_dots("cars")
+tm_shape(car_rnet) + 
+  tm_lines("car_driver", 
+           breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
+  tm_shape(car_sum) + tm_dots("mean_cars")
 
 speed_mean = average_speed_2021 %>% 
   group_by(`Sensor Name`) %>% 
