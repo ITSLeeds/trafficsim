@@ -61,9 +61,11 @@ list(
     #   download_urban_data(period = i, dataset = "People%20Count")
     #   download_urban_data(period = i, dataset = "People%20Count")
     # }
-  # }),
-  # tar_target(download_2013, {
-  #   download_urban_data(period = 2013, dataset = "Cars")
+  }),
+  tar_target(download_2013, {
+    download_urban_data(period = "2013-86400", 
+                        dataset = "Cars",
+                        base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
   }),
   tar_target(car_count_2021, {
     # hourly aggregated
@@ -107,9 +109,9 @@ tar_target(car_sum, {
     summarise(cars = sum(Value),
               n = n())
   }),
-tar_target(car_2013, {
+tar_target(car_2013, { # 21 locations
   car_2013 = read.csv("data/2013-86400-Cars.csv")
-  car_2013 = st_as_sf(car_2013, wkt = "Location..(WKT).")
+  car_2013 = st_as_sf(car_2013, wkt = "Location..WKT.")
   car_2013_sum = car_2013 %>% 
     group_by(Sensor.Name) %>% 
     summarise(cars = mean(Mean.Value),
