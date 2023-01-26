@@ -75,6 +75,7 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
+    st_crs(car_count_2021) = 4326
   }), 
   tar_target(traffic_flow_2021, {
     # hourly aggregated
@@ -84,6 +85,7 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     traffic_flow_2021 = st_as_sf(traffic_flow_2021, wkt = "Location (WKT)")
+    st_crs(traffic_flow_2021) = 4326
   }), 
   tar_target(average_speed_2021, {
     # hourly aggregated
@@ -93,6 +95,7 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     average_speed_2021 = st_as_sf(average_speed_2021, wkt = "Location (WKT)")
+    st_crs(average_speed_2021) = 4326
   }), 
   tar_target(congestion_2021, {
     # hourly aggregated
@@ -102,6 +105,7 @@ list(
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
     congestion_2021 = st_as_sf(congestion_2021, wkt = "Location (WKT)")
+    st_crs(congestion_2021) = 4326
   }), 
 tar_target(car_sum, {
   car_sum = car_count_2021 %>% 
@@ -112,9 +116,10 @@ tar_target(car_sum, {
 tar_target(car_2013, { # 21 locations
   car_2013 = read.csv("data/2013-86400-Cars.csv")
   car_2013 = st_as_sf(car_2013, wkt = "Location..WKT.")
+  st_crs(car_2013) = 4326
   car_2013_sum = car_2013 %>% 
     group_by(Sensor.Name) %>% 
-    summarise(cars = mean(Mean.Value),
+    summarise(mean_cars = mean(Mean.Value),
               n = n())
 })
 # ,
