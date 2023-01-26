@@ -166,6 +166,8 @@ car_rnet = overline(
   regionalise = 1e+07
   )
 
+car_rnet = tibble::rowid_to_column(car_rnet, "ID")
+
 saveRDS(foot_rnet, "data/foot_rnet_jittered.Rds")
 saveRDS(bicycle_rnet, "data/bicycle_rnet_jittered.Rds")
 saveRDS(car_rnet, "data/car_rnet_jittered.Rds")
@@ -239,6 +241,15 @@ tm_shape(car_2013_sum) + tm_dots() +
 # Join rnet with UO counts
 rnet_refs = st_nearest_feature(x = car_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
+rnet_joined = cbind(rnet_feats, car_sum)
 
 tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
   tm_shape(car_sum) + tm_dots("mean_cars")
+
+m1 = lm(mean_cars ~ car_driver, data = rnet_joined)
+summary(m1)$r.squared
+# [1] 0.05131899
+
+ggplot(rnet_joined, aes(car_driver, mean_cars)) + 
+  geom_point() + 
+  labs(y = "Mean cars in UO images Jan 2021", x = "2011 Census car driver commute trips")
