@@ -218,22 +218,25 @@ tm_shape(car_rnet) +
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
   tm_shape(car_sum) + tm_dots("mean_cars")
 
-speed_mean = average_speed_2021 %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(n = n(),
-            mean_speed = mean(Value)
-  )
+tm_shape(car_2013_sum) + tm_dots() +
+  tm_shape(car_rnet) + tm_lines("car_driver")
 
-tm_shape(speed_mean) + tm_dots("mean_speed")
+# # Speed and flow (small area only)
+# speed_mean = average_speed_2021 %>% 
+#   group_by(`Sensor Name`) %>% 
+#   summarise(n = n(),
+#             mean_speed = mean(Value)
+#   )
+# tm_shape(speed_mean) + tm_dots("mean_speed")
+# 
+# congestion_mean = congestion_2021 %>% 
+#   group_by(`Sensor Name`) %>% 
+#   summarise(n = n(),
+#             mean_congestion = mean(Value)
+#   )
+# tm_shape(congestion_mean) + tm_dots("mean_congestion")
 
-congestion_mean = congestion_2021 %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(n = n(),
-            mean_congestion = mean(Value)
-  )
-
-tm_shape(congestion_mean) + tm_dots("mean_congestion")
-
+# Join rnet with UO counts
 rnet_refs = st_nearest_feature(x = car_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 
