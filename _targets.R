@@ -4,7 +4,7 @@
 library(targets)
 # remotes::install_github("itsleeds/dfttrafficcounts")
 # library(tidyverse)
-# library(sf)
+library(sf)
 source("R/download.R")
 # library(tmap)
 # tmap_mode("view")
@@ -55,6 +55,7 @@ list(
       download_urban_data(period = i, dataset = "Car%20Count")
       download_urban_data(period = i, dataset = "Congestion")
       download_urban_data(period = i, dataset = "Traffic%20Flow")
+      download_urban_data(period = i, dataset = "Plates%20In")
     }
     # years = as.character(2019:2021)
     # for(i in years) {
@@ -63,9 +64,12 @@ list(
     # }
   }),
   tar_target(download_2013, {
-    download_urban_data(period = "2013-86400", 
-                        dataset = "Cars",
-                        base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
+    periods = paste0("201", 3:9, "-86400")
+    for (i in periods) {
+      download_urban_data(period = i, 
+                          dataset = "Vehicle%20Count",
+                          base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
+    }
   }),
   tar_target(car_count_2021, {
     # hourly aggregated
@@ -113,11 +117,11 @@ tar_target(car_sum, {
     summarise(cars = sum(Value),
               n = n())
   }),
-tar_target(car_2013, { # 21 locations
-  car_2013 = read.csv("data/2013-86400-Cars.csv")
-  car_2013 = st_as_sf(car_2013, wkt = "Location..WKT.")
-  st_crs(car_2013) = 4326
-  car_2013_sum = car_2013 %>% 
+tar_target(car_2017, { # 21 locations
+  car_2017 = read.csv("data/2022-86400-Plates%20In.csv")
+  car_2017 = st_as_sf(car_2017, wkt = "Location..WKT.")
+  st_crs(car_2017) = 4326
+  car_2017_sum = car_2017 %>% 
     group_by(Sensor.Name) %>% 
     summarise(mean_cars = mean(Mean.Value),
               n = n())
@@ -204,3 +208,13 @@ tar_target(car_2013, { # 21 locations
 )
 
 # tm_shape(car_sum) + tm_dots("cars")
+
+# hourly aggregated
+plates_in = read_csv("data/2022-01-Plates In.csv")
+# 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+# car_count_2021 %>%
+#   group_by(`Sensor Name`) %>%
+#   summarise(n = n())
+plates_in = st_as_sf(plates_in, wkt = "Location (WKT)")
+st_crs(plates_in) = 4326
+}), 
