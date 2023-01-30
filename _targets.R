@@ -56,6 +56,7 @@ list(
       download_urban_data(period = i, dataset = "Congestion")
       download_urban_data(period = i, dataset = "Traffic%20Flow")
       download_urban_data(period = i, dataset = "Plates%20In")
+      download_urban_data(period = i, dataset = "Plates%20Out")
     }
     # years = as.character(2019:2021)
     # for(i in years) {
@@ -80,6 +81,23 @@ list(
     #   summarise(n = n())
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
     st_crs(car_count_2021) = 4326
+  }), 
+  tar_target(plates_2021, {
+    # hourly aggregated
+    plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
+    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+    # plates_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
+    st_crs(plates_in_2021) = 4326
+    plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
+    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+    # plates_2021 %>%
+    #   group_by(`Sensor Name`) %>%
+    #   summarise(n = n())
+    plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
+    st_crs(plates_out_2021) = 4326
   }), 
   tar_target(traffic_flow_2021, {
     # hourly aggregated
@@ -207,14 +225,4 @@ tar_target(car_2017, { # 21 locations
   # })
 )
 
-# tm_shape(car_sum) + tm_dots("cars")
 
-# hourly aggregated
-plates_in = read_csv("data/2022-01-Plates In.csv")
-# 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
-# car_count_2021 %>%
-#   group_by(`Sensor Name`) %>%
-#   summarise(n = n())
-plates_in = st_as_sf(plates_in, wkt = "Location (WKT)")
-st_crs(plates_in) = 4326
-}), 
