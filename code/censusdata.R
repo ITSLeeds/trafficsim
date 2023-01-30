@@ -203,24 +203,24 @@ tm_shape(car_rnet) +
 
 # Validation --------------------------------------------------------------
 
-plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
-plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
-st_crs(plates_in_2021) = 4326
+plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
+plates_out_2021 = st_as_sf(plates_out_2021, coords = c("Sensor Centroid Longitude", "Sensor Centroid Latitude"))
+st_crs(plates_out_2021) = 4326
 
 # needs calibrating to avoid outlying high values due to parked cars
 
-in_sum = plates_in_2021 %>% 
+out_sum = plates_out_2021 %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
             mean_cars = mean(Value)
             )
-tm_shape(in_sum) + tm_dots("mean_cars")
+tm_shape(out_sum) + tm_dots("cars")
 
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(in_sum) + tm_dots("mean_cars")
+  tm_shape(out_sum) + tm_dots("mean_cars")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("car_driver")
@@ -248,13 +248,15 @@ rnet_joined = cbind(rnet_feats, in_sum)
 tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
   tm_shape(in_sum) + tm_dots("mean_cars")
 
-m1 = lm(mean_cars ~ car_driver, data = rnet_joined)
+m1 = lm(cars ~ car_driver, data = rnet_joined)
 summary(m1)$r.squared
-# [1] 0.05131899
+# [1] 0.05131899 # car count mean
+# [1] 0.09205562 # plates in mean
+# [1] 0.09248765 # plates in sum
 
-ggplot(rnet_joined, aes(car_driver, mean_cars)) + 
+ggplot(rnet_joined, aes(car_driver, cars)) + 
   geom_point() + 
-  labs(y = "Mean cars in UO images Jan 2021", x = "2011 Census car driver commute trips")
+  labs(y = "Sum 'Plates In' Jan 2021", x = "2011 Census car driver commute trips")
 
 # Join rnet with UO counts
 rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)
