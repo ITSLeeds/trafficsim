@@ -203,22 +203,24 @@ tm_shape(car_rnet) +
 
 # Validation --------------------------------------------------------------
 
-car_count_2021 = read_csv("data/2021-1-Car Count.csv")
-car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
-# st_crs(car_count_2021) = 4326
+plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
+plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
+st_crs(plates_in_2021) = 4326
 
-car_sum = car_count_2021 %>% 
+# needs calibrating to avoid outlying high values due to parked cars
+
+in_sum = plates_in_2021 %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
             mean_cars = mean(Value)
             )
-tm_shape(car_sum) + tm_dots("mean_cars")
+tm_shape(in_sum) + tm_dots("mean_cars")
 
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(car_sum) + tm_dots("mean_cars")
+  tm_shape(in_sum) + tm_dots("mean_cars")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("car_driver")
@@ -239,12 +241,12 @@ tm_shape(car_2013_sum) + tm_dots() +
 # tm_shape(congestion_mean) + tm_dots("mean_congestion")
 
 # Join rnet with UO counts
-rnet_refs = st_nearest_feature(x = car_sum, y = car_rnet)
+rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
-rnet_joined = cbind(rnet_feats, car_sum)
+rnet_joined = cbind(rnet_feats, in_sum)
 
 tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
-  tm_shape(car_sum) + tm_dots("mean_cars")
+  tm_shape(in_sum) + tm_dots("mean_cars")
 
 m1 = lm(mean_cars ~ car_driver, data = rnet_joined)
 summary(m1)$r.squared
