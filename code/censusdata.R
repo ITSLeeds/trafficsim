@@ -203,11 +203,23 @@ tm_shape(car_rnet) +
 
 # Validation --------------------------------------------------------------
 
+plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
+plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
+st_crs(plates_in_2021) = 4326
+
 plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
-plates_out_2021 = st_as_sf(plates_out_2021, coords = c("Sensor Centroid Longitude", "Sensor Centroid Latitude"))
+plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
 st_crs(plates_out_2021) = 4326
 
 # needs calibrating to avoid outlying high values due to parked cars
+in_sum = plates_in_2021 %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(cars = sum(Value), 
+            n = n(),
+            mean_cars = mean(Value)
+  )
+saveRDS(in_sum, "data/in_sum.Rds")
+tm_shape(in_sum) + tm_lines("cars", lwd = 3)
 
 out_sum = plates_out_2021 %>% 
   group_by(`Sensor Name`) %>% 
@@ -215,7 +227,8 @@ out_sum = plates_out_2021 %>%
             n = n(),
             mean_cars = mean(Value)
             )
-tm_shape(out_sum) + tm_dots("cars")
+saveRDS(out_sum, "data/out_sum.Rds")
+tm_shape(out_sum) + tm_lines("cars")
 
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
