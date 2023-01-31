@@ -204,10 +204,15 @@ tm_shape(car_rnet) +
 # Validation --------------------------------------------------------------
 
 plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
-plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
-st_crs(plates_in_2021) = 4326
+pf = plates_in_2021 %>% 
+  mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
+         coords2 = sub(pattern = ".*\\(", replacement = "", coords))
+pf = st_as_sf(pf, coords = "coords2")
+st_crs(pf) = 4326
 
 plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
+pe = sub(pattern = ".*,", replacement = "", plates_in_2021$`Location (WKT)`[1])
+sub(pattern = "\\).*", replacement = "", pe)
 plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
 st_crs(plates_out_2021) = 4326
 
