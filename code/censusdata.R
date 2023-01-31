@@ -207,7 +207,10 @@ plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
 pf = plates_in_2021 %>% 
   mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
          coords2 = sub(pattern = ".*\\(", replacement = "", coords))
-pf = st_as_sf(pf, coords = "coords2")
+pf = pf %>% 
+  mutate(long = sub(pattern = " .*", replacement = "", coords2),
+         lat = sub(pattern = ".* ", replacement = "", coords2))
+pf = st_as_sf(pf, coords = c("long", "lat"))
 st_crs(pf) = 4326
 
 plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
