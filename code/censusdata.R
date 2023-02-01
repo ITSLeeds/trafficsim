@@ -205,6 +205,10 @@ tm_shape(car_rnet) +
 
 # Need to find out whether some sensor locations are double-counted
 
+# these are in the same location but have different car counts:
+per = plates_in_2021 %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A" | `Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
+
 # Plates In
 plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
 
