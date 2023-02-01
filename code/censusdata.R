@@ -246,7 +246,7 @@ plates_out_2021 = plates_out_2021 %>%
   filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
 
 plates_out_2021 = plates_out_2021 %>% 
-  mutate(coords = sub(pattern = ".*,", replacement = "", `Location (WKT)`),
+  mutate(coords = sub(pattern = ".*, ", replacement = "", `Location (WKT)`),
          coords = sub(pattern = "\\).*", replacement = "", coords))
 plates_out_2021 = plates_out_2021 %>% 
   mutate(long = sub(pattern = " .*", replacement = "", coords),
@@ -266,23 +266,6 @@ out_sum = plates_out_2021 %>%
 
 saveRDS(out_sum, "data/out_sum.Rds")
 tm_shape(out_sum) + tm_dots("cars")
-
-plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
-pe = sub(pattern = ".*,", replacement = "", plates_in_2021$`Location (WKT)`[1])
-sub(pattern = "\\).*", replacement = "", pe)
-plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
-st_crs(plates_out_2021) = 4326
-
-
-
-out_sum = plates_out_2021 %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(cars = sum(Value), 
-            n = n(),
-            mean_cars = mean(Value)
-            )
-saveRDS(out_sum, "data/out_sum.Rds")
-tm_shape(out_sum) + tm_lines("cars")
 
 # Validation --------------------------------------------------------------
 
