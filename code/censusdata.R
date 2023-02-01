@@ -273,7 +273,7 @@ tm_shape(out_sum) + tm_dots("cars")
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(out_sum) + tm_dots("mean_cars")
+  tm_shape(out_sum) + tm_dots("cars")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("car_driver")
@@ -299,13 +299,13 @@ rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
 
 tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
-  tm_shape(in_sum) + tm_dots("mean_cars")
+  tm_shape(in_sum) + tm_dots("cars")
 
 m1 = lm(cars ~ car_driver, data = rnet_joined)
 summary(m1)$r.squared
 # [1] 0.05131899 # car count mean
-# [1] 0.09205562 # plates in mean
-# [1] 0.09248765 # plates in sum
+# [1] 0.2331099 # plates in mean
+# [1] 0.2368261 # plates in sum
 
 ggplot(rnet_joined, aes(car_driver, cars)) + 
   geom_point() + 
