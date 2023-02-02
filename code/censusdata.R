@@ -221,7 +221,6 @@ plates_in_2021 = plates_in_2021 %>%
   mutate(long = sub(pattern = " .*", replacement = "", coords),
          lat = sub(pattern = ".* ", replacement = "", coords),
          day = as.Date(Timestamp))
-)
 plates_in_2021 = st_as_sf(plates_in_2021, coords = c("long", "lat"))
 st_crs(plates_in_2021) = 4326
 
@@ -255,7 +254,6 @@ plates_out_2021 = plates_out_2021 %>%
   mutate(long = sub(pattern = " .*", replacement = "", coords),
          lat = sub(pattern = ".* ", replacement = "", coords),
          day = as.Date(Timestamp))
-)
 plates_out_2021 = st_as_sf(plates_out_2021, coords = c("long", "lat"))
 st_crs(plates_out_2021) = 4326
 
@@ -291,6 +289,9 @@ per1 = plates_in_2021 %>%
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 sum(per1$Value)
 # [1] 33097
+per3 = plates_in_2021 %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A")
+
 in_sum = plates_in_2021 %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
@@ -314,7 +315,17 @@ per1_daily = per1 %>%
   st_drop_geometry() %>% 
   group_by(day) %>% 
   summarise(cars = sum(Value))
+per3_daily = per3 %>% 
+  st_drop_geometry() %>% 
+  group_by(day) %>% 
+  summarise(cars = sum(Value))
 
+# Find out which days have incomplete data
+min_val = max(per1_daily$cars)/5
+complete = per1_daily %>% 
+  filter(cars > min_val)
+nrow(complete)
+min(complete$day)
 
 # Validation --------------------------------------------------------------
 
