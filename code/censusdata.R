@@ -201,6 +201,8 @@ tm_shape(car_rnet) +
 
 # Need to find out whether some sensor locations are double-counted
 
+# Does it include van / bus / HGV / taxi / motorbike plates?
+
 # Plates In ---------------------------------------------------------------
 
 plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
@@ -413,9 +415,10 @@ summary(m1)$r.squared
 # [1] 0.2601955 # plates in mean
 # [1] 0.2605575 # plates in sum
 
-ggplot(rnet_joined, aes(car_driver, cars)) + 
+ggplot(rnet_joined, aes(car_driver, cars/7)) + 
   geom_point() + 
-  labs(y = "Sum 'Plates In' Jan 2021", x = "2011 Census car driver commute trips")
+  labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver commute trips") +
+  expand_limits(y = 0)
 
 # Join rnet with UO counts
 rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)
