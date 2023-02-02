@@ -44,10 +44,11 @@ lines_bicycle = lines_matching %>%
   # select(-c(foot:ebike_sico2)) %>% 
   select(geo_code1, geo_code2, bicycle)
 
-lines_car = lines_matching %>% 
-  filter(car_driver > 0) %>% 
+# change this to get all vehicles
+lines_drive = lines_matching %>% 
+  filter(car_driver > 0 | taxi_other > 0 | motorbike > 0) %>% # misses buses
   # select(-bicycle, -foot, -c(govtarget_slc:ebike_sico2)) %>% 
-  select(geo_code1, geo_code2, car_driver)
+  select(geo_code1, geo_code2, car_driver, taxi_other, motorbike)
 
 
 # Unjittered routes ------------------------------------------------------
@@ -201,7 +202,7 @@ tm_shape(car_rnet) +
 
 # Need to find out whether some sensor locations are double-counted
 
-# Does it include van / bus / HGV / taxi / motorbike plates?
+# It includes all vehicles eg van / bus / HGV / taxi / motorbikes
 
 # Plates In ---------------------------------------------------------------
 
