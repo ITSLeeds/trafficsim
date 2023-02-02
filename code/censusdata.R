@@ -172,10 +172,6 @@ saveRDS(foot_rnet, "data/foot_rnet_jittered.Rds")
 saveRDS(bicycle_rnet, "data/bicycle_rnet_jittered.Rds")
 saveRDS(car_rnet, "data/car_rnet_jittered.Rds")
 
-foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
-bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
-car_rnet = readRDS("data/car_rnet_jittered.Rds")
-
 tm_shape(foot_rnet) + tm_lines("foot")
 tm_shape(bicycle_rnet) + tm_lines("bicycle")
 tm_shape(car_rnet) + 
@@ -264,7 +260,6 @@ saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
 
 # needs calibrating to avoid outlying high values due to parked cars
 in_sum = plates_in_2021 %>% 
-  st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
@@ -318,7 +313,6 @@ saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
 
 # needs calibrating to avoid outlying high values due to parked cars
 out_sum = plates_out_2021 %>% 
-  st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
@@ -378,6 +372,9 @@ per3_daily = per3 %>%
 
 # Validation --------------------------------------------------------------
 
+foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
+bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
+car_rnet = readRDS("data/car_rnet_jittered.Rds")
 
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
@@ -413,8 +410,8 @@ tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
 m1 = lm(cars ~ car_driver, data = rnet_joined)
 summary(m1)$r.squared
 # [1] 0.05131899 # car count mean
-# [1] 0.2331099 # plates in mean
-# [1] 0.2368261 # plates in sum
+# [1] 0.2601955 # plates in mean
+# [1] 0.2605575 # plates in sum
 
 ggplot(rnet_joined, aes(car_driver, cars)) + 
   geom_point() + 
