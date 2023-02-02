@@ -205,7 +205,8 @@ tm_shape(car_rnet) +
 
 # Need to find out whether some sensor locations are double-counted
 
-# Plates In
+# Plates In ---------------------------------------------------------------
+
 plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
 
 # Remove bus sensors and test/dummy sensors
@@ -273,7 +274,9 @@ in_sum = plates_in_2021 %>%
 saveRDS(in_sum, "data/in_sum.Rds")
 tm_shape(in_sum) + tm_dots("cars")
 
-# Plates Out
+
+# Plates Out --------------------------------------------------------------
+
 plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
 
 # Remove bus sensors and test/dummy sensors
@@ -291,6 +294,25 @@ plates_out_2021 = plates_out_2021 %>%
          day = as.Date(Timestamp))
 plates_out_2021 = st_as_sf(plates_out_2021, coords = c("long", "lat"))
 st_crs(plates_out_2021) = 4326
+
+# Find out which days have incomplete data
+out_day = plates_out_2021 %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`, day) %>% 
+  summarise(cars_day = sum(Value))
+out_max = out_day %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(day_max = max(cars_day),
+            day_medi = median(cars_day)) 
+out_sensor_days = inner_join(out_day, out_max, by = "Sensor Name")
+out_full_days = out_sensor_days %>%
+  filter(
+    # cars_day > (day_max/5), # only include days with full records
+    day >= "2021-01-25", # only include days with full records
+    day_medi > 0 # exclude sensors with 0 cars on most days
+  )
+
+plates_out_2021 = inner_join(plates_out_2021, out_full_days, by = c("Sensor Name", "day")) 
 
 saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
 
