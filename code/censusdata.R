@@ -205,10 +205,6 @@ tm_shape(car_rnet) +
 
 # Need to find out whether some sensor locations are double-counted
 
-# these are in the same location but have different car counts:
-per = plates_in_2021 %>% 
-  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A" | `Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
-
 # Plates In
 plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
 
@@ -223,7 +219,9 @@ plates_in_2021 = plates_in_2021 %>%
          coords = sub(pattern = ".*\\(", replacement = "", coords))
 plates_in_2021 = plates_in_2021 %>% 
   mutate(long = sub(pattern = " .*", replacement = "", coords),
-         lat = sub(pattern = ".* ", replacement = "", coords))
+         lat = sub(pattern = ".* ", replacement = "", coords),
+         day = as.Date(Timestamp))
+)
 plates_in_2021 = st_as_sf(plates_in_2021, coords = c("long", "lat"))
 st_crs(plates_in_2021) = 4326
 
@@ -231,6 +229,7 @@ saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
 
 # needs calibrating to avoid outlying high values due to parked cars
 in_sum = plates_in_2021 %>% 
+  st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
@@ -254,14 +253,17 @@ plates_out_2021 = plates_out_2021 %>%
          coords = sub(pattern = "\\).*", replacement = "", coords))
 plates_out_2021 = plates_out_2021 %>% 
   mutate(long = sub(pattern = " .*", replacement = "", coords),
-         lat = sub(pattern = ".* ", replacement = "", coords))
+         lat = sub(pattern = ".* ", replacement = "", coords),
+         day = as.Date(Timestamp))
+)
 plates_out_2021 = st_as_sf(plates_out_2021, coords = c("long", "lat"))
 st_crs(plates_out_2021) = 4326
 
-saveRDS(plates_out_2021, "data/plates-in-2021-1.Rds")
+saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
 
 # needs calibrating to avoid outlying high values due to parked cars
 out_sum = plates_out_2021 %>% 
+  st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
@@ -271,13 +273,56 @@ out_sum = plates_out_2021 %>%
 saveRDS(out_sum, "data/out_sum.Rds")
 tm_shape(out_sum) + tm_dots("cars")
 
+
+# Read in 
+plates_in_2021 = readRDS("data/plates-in-2021-1.Rds")
+plates_out_2021 = readRDS("data/plates-out-2021-1.Rds")
+in_sum = readRDS("data/in_sum.Rds")
+out_sum = readRDS("data/out_sum.Rds")
+
+# these are in the same location but have different car counts:
+per = plates_in_2021 %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A" | `Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
+# opposite side of the road
+per2 = plates_in_2021 %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_NB4")
+
+per1 = plates_in_2021 %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
+sum(per1$Value)
+# [1] 33097
+in_sum = plates_in_2021 %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(cars = sum(Value), 
+            n = n(),
+            mean_cars = mean(Value)
+  )
+i1 = in_sum %>% 
+  filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
+sum(i1$cars)
+# [1] 33097
+
+
+# Time plots --------------------------------------------------------------
+
+ggplot(per1, aes(x = Timestamp, y = Value)) +
+  geom_line() + 
+  geom_point() +
+  labs(y = "PER_NE_CAJT_GHA167_DR3_DR2")
+
+per1_daily = per1 %>% 
+  st_drop_geometry() %>% 
+  group_by(day) %>% 
+  summarise(cars = sum(Value))
+
+
 # Validation --------------------------------------------------------------
 
 
 tm_shape(car_rnet) + 
   tm_lines("car_driver", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(out_sum) + tm_dots("cars")
+  tm_shape(in_sum) + tm_dots("cars")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("car_driver")
