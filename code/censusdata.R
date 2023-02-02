@@ -224,6 +224,41 @@ plates_in_2021 = plates_in_2021 %>%
 plates_in_2021 = st_as_sf(plates_in_2021, coords = c("long", "lat"))
 st_crs(plates_in_2021) = 4326
 
+# Find out which days have incomplete data
+in_day = plates_in_2021 %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`, day) %>% 
+  summarise(cars_day = sum(Value))
+in_max = in_day %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(day_max = max(cars_day),
+            day_medi = median(cars_day)) 
+in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
+in_full_days = in_sensor_days %>%
+  filter(
+    # cars_day > (day_max/5), # only include days with full records
+    day >= "2021-01-25", # only include days with full records
+    day_medi > 0 # exclude sensors with 0 cars on most days
+    )
+
+# # some extra days are missing
+# jj = inner_join(plates_in_2021, in_full_days, by = c("Sensor Name", "day")) 
+# min(jj$day)
+# daysen = in_full_days %>% 
+#   group_by(`Sensor Name`) %>% 
+#   summarise(start = min(day))
+# xx = jj %>% st_drop_geometry() %>% group_by(`Sensor Name`) %>% summarise(dayss = length(unique(day)))
+# summary(xx$dayss)
+# # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# # 6.000   7.000   7.000   6.991   7.000   7.000 
+# xx %>% filter(dayss == 6)
+# # 1 PER_NE_CAJT_GHA184_NR3_NR2       6
+# # 2 PER_NE_CAJT_NTA189_MF8_SPR6B     6
+# View(in_sensor_days %>% filter(`Sensor Name` == "PER_NE_CAJT_GHA184_NR3_NR2" | `Sensor Name` == "PER_NE_CAJT_NTA189_MF8_SPR6B"))
+# # Both have low traffic on the final sunday
+
+plates_in_2021 = inner_join(plates_in_2021, in_full_days, by = c("Sensor Name", "day")) 
+
 saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
 
 # needs calibrating to avoid outlying high values due to parked cars
@@ -292,17 +327,10 @@ sum(per1$Value)
 per3 = plates_in_2021 %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A")
 
-in_sum = plates_in_2021 %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(cars = sum(Value), 
-            n = n(),
-            mean_cars = mean(Value)
-  )
 i1 = in_sum %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 sum(i1$cars)
 # [1] 33097
-
 
 # Time plots --------------------------------------------------------------
 
@@ -318,14 +346,13 @@ per1_daily = per1 %>%
 per3_daily = per3 %>% 
   st_drop_geometry() %>% 
   group_by(day) %>% 
-  summarise(cars = sum(Value))
+  summarise
 
-# Find out which days have incomplete data
-min_val = max(per1_daily$cars)/5
-complete = per1_daily %>% 
-  filter(cars > min_val)
-nrow(complete)
-min(complete$day)
+# min_val = max(per1_daily$cars)/5
+# complete = per1_daily %>% 
+#   filter(cars > min_val)
+# nrow(complete)
+# min(complete$day)
 
 # Validation --------------------------------------------------------------
 
