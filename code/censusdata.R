@@ -44,11 +44,12 @@ lines_bicycle = lines_matching %>%
   # select(-c(foot:ebike_sico2)) %>% 
   select(geo_code1, geo_code2, bicycle)
 
-# change this to get all vehicles
+# changed to get all vehicles not just car drivers
 lines_drive = lines_matching %>% 
   filter(car_driver > 0 | taxi_other > 0 | motorbike > 0) %>% # misses buses
   # select(-bicycle, -foot, -c(govtarget_slc:ebike_sico2)) %>% 
-  select(geo_code1, geo_code2, car_driver, taxi_other, motorbike)
+  select(geo_code1, geo_code2, car_driver, taxi_other, motorbike) %>% 
+  mutate(all_vehs = car_driver + taxi_other + motorbike)
 
 
 # Unjittered routes ------------------------------------------------------
@@ -116,28 +117,30 @@ od_bicycle_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
-osm_drive = readRDS("data/osm_drive_2023-01-11.Rds")
+osm_drive = osmextract::oe_read("OTP/graphs/tyne-and-wear/north-east.osm.pbf")
 
-od_car_jittered = odjitter::jitter(
-  od = lines_car,
+od_drive_jittered = odjitter::jitter(
+  od = lines_drive,
   zones = wider_northeast,
   zone_name_key = "geo_code",
   subpoints = osm_drive,
   disaggregation_threshold = disag_threshold,
-  disaggregation_key = "car_driver",
+  disaggregation_key = "all_vehs",
   min_distance_meters = min_distance_meters
 ) 
 
 saveRDS(od_foot_jittered, "data/od_foot_jittered.Rds")
 saveRDS(od_bicycle_jittered, "data/od_bicycle_jittered.Rds")
-saveRDS(od_car_jittered, "data/od_car_jittered.Rds")
+saveRDS(od_drive_jittered, "data/od_drive_jittered.Rds")
+
+# Then do the routing in OTP using code/otp.R
 
 
 # Routing the jittered OD with OSRM (plan to use OTP instead) --------------
 
 # foot_osrm = route(l = od_foot_jittered, route_fun = route_osrm) # default routing profile is "foot"
 # bicycle_osrm = route(l = od_bicycle_jittered, route_fun = route_osrm, osrm.profile = "bike")
-# car_osrm = route(l = od_car_jittered, route_fun = route_osrm, osrm.profile = "car")
+# car_osrm = route(l = od_drive_jittered, route_fun = route_osrm, osrm.profile = "car")
 # 
 # saveRDS(foot_osrm, "data/foot_jittered_osrm.Rds")
 # saveRDS(bicycle_osrm, "data/bicycle_jittered_osrm.Rds")
@@ -162,8 +165,8 @@ foot_rnet = overline(foot_osrm, attrib = "foot", regionalise = 1e+07)
 bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle", regionalise = 1e+07)
 car_rnet = overline(
   routes_car_otp, 
-  # attrib = c("car_driver", "car_passenger", "motorbike", "taxi_other")
-  attrib = "car_driver",
+  # attrib = c("car_driver", "motorbike", "taxi_other")
+  attrib = "all_vehs",
   regionalise = 1e+07
   )
 
@@ -176,7 +179,7 @@ saveRDS(car_rnet, "data/car_rnet_jittered.Rds")
 tm_shape(foot_rnet) + tm_lines("foot")
 tm_shape(bicycle_rnet) + tm_lines("bicycle")
 tm_shape(car_rnet) + 
-  tm_lines("car_driver", 
+  tm_lines("all_vehs", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000))
 
 # rnet = get_pct_rnet(region = "north-east", purpose = "commute", geography = "lsoa")
@@ -380,12 +383,12 @@ bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
 car_rnet = readRDS("data/car_rnet_jittered.Rds")
 
 tm_shape(car_rnet) + 
-  tm_lines("car_driver", 
+  tm_lines("all_vehs", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
   tm_shape(in_sum) + tm_dots("cars")
 
 tm_shape(car_2013_sum) + tm_dots() +
-  tm_shape(car_rnet) + tm_lines("car_driver")
+  tm_shape(car_rnet) + tm_lines("all_vehs")
 
 # # Speed and flow (small area only)
 # speed_mean = average_speed_2021 %>% 
@@ -407,16 +410,16 @@ rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
 
-tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
+tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
   tm_shape(in_sum) + tm_dots("cars")
 
-m1 = lm(cars ~ car_driver, data = rnet_joined)
+m1 = lm(cars ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
 # [1] 0.05131899 # car count mean
 # [1] 0.2601955 # plates in mean
 # [1] 0.2605575 # plates in sum
 
-ggplot(rnet_joined, aes(car_driver, cars/7)) + 
+ggplot(rnet_joined, aes(all_vehs, cars/7)) + 
   geom_point() + 
   labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver commute trips") +
   expand_limits(y = 0)
@@ -426,13 +429,13 @@ rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, car_2013_sum)
 
-tm_shape(rnet_feats) + tm_lines("car_driver", lwd = 3) +
+tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
   tm_shape(car_2013_sum) + tm_dots("mean_cars")
 
-m1 = lm(mean_cars ~ car_driver, data = rnet_joined)
+m1 = lm(mean_cars ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
 # [1] 0.008347389
 
-ggplot(rnet_joined, aes(car_driver, mean_cars)) + 
+ggplot(rnet_joined, aes(all_vehs, mean_cars)) + 
   geom_point() + 
   labs(y = "Mean cars in UO images 2013", x = "2011 Census car driver commute trips")
