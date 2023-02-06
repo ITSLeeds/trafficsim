@@ -117,6 +117,7 @@ od_bicycle_jittered = odjitter::jitter(
   min_distance_meters = min_distance_meters
 ) 
 
+# why does this give more routing errors than using "data/osm_drive_2023-01-17.Rds"?
 osm_drive = osmextract::oe_read("OTP/graphs/tyne-and-wear/north-east.osm.pbf")
 
 od_drive_jittered = odjitter::jitter(
@@ -159,12 +160,12 @@ saveRDS(od_drive_jittered, "data/od_drive_jittered.Rds")
 # car_line = st_cast(car_osrm$geometry, "LINESTRING")
 # car_osrm$geometry = car_line
 
-routes_car_otp = readRDS("data/routes_car_otp_3_counties.Rds")
+routes_drive_otp = readRDS("data/routes_drive_otp_3_counties.Rds")
 
 foot_rnet = overline(foot_osrm, attrib = "foot", regionalise = 1e+07)
 bicycle_rnet = overline(bicycle_osrm, attrib = "bicycle", regionalise = 1e+07)
 car_rnet = overline(
-  routes_car_otp, 
+  routes_drive_otp, 
   # attrib = c("car_driver", "motorbike", "taxi_other")
   attrib = "all_vehs",
   regionalise = 1e+07
@@ -174,7 +175,7 @@ car_rnet = tibble::rowid_to_column(car_rnet, "ID")
 
 saveRDS(foot_rnet, "data/foot_rnet_jittered.Rds")
 saveRDS(bicycle_rnet, "data/bicycle_rnet_jittered.Rds")
-saveRDS(car_rnet, "data/car_rnet_jittered.Rds")
+saveRDS(car_rnet, "data/drive_rnet_jittered.Rds")
 
 tm_shape(foot_rnet) + tm_lines("foot")
 tm_shape(bicycle_rnet) + tm_lines("bicycle")
@@ -380,7 +381,7 @@ per3_daily = per3 %>%
 
 foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
 bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
-car_rnet = readRDS("data/car_rnet_jittered.Rds")
+car_rnet = readRDS("data/drive_rnet_jittered.Rds")
 
 tm_shape(car_rnet) + 
   tm_lines("all_vehs", 
@@ -416,13 +417,13 @@ tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
 m1 = lm(cars ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
 # [1] 0.05131899 # car count mean
-# [1] 0.2601955 # plates in mean
-# [1] 0.2605575 # plates in sum
+# [1] 0.2714064 # plates in mean
+# [1] 0.2716468 # plates in sum
 
 ggplot(rnet_joined, aes(all_vehs, cars/7)) + 
   geom_point() + 
-  labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver commute trips") +
-  expand_limits(y = 0)
+  labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver/taxi/motorbike/other commute trips") +
+  expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
 
 # Join rnet with UO counts
 rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)

@@ -65,7 +65,7 @@ osmextract::oe_download(file_url = durham_match$url, download_directory = "data"
 # osmium cat data/north-east.osm -o OTP/graphs/tyne-and-wear/north-east.osm.pbf
 
 # Format OD data for OTP
-desire_lines = readRDS("data/od_car_jittered.Rds")
+desire_lines = readRDS("data/od_drive_jittered.Rds")
 desire_lines = tibble::rowid_to_column(desire_lines, "ID")
 # des_top = desire_lines %>% sample_n(5)
 # o = lwgeom::st_startpoint(des_top)
@@ -110,7 +110,7 @@ otp_stop()
 des = desire_lines %>% 
   st_drop_geometry() %>% 
   mutate(ID = as.character(ID))
-route_id = left_join(routes_car_otp, des, by = c("fromPlace" = "ID"))
-saveRDS(route_id, "data/routes_car_otp_3_counties.Rds")
+route_id = left_join(route, des, by = c("fromPlace" = "ID"))
+saveRDS(route_id, "data/routes_drive_otp_3_counties.Rds")
 
 
