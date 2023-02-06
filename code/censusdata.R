@@ -264,8 +264,21 @@ in_full_days = in_sensor_days %>%
 plates_in_2021 = inner_join(plates_in_2021, in_full_days, by = c("Sensor Name", "day")) 
 
 saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
-
 # needs calibrating to avoid outlying high values due to parked cars
+
+# Use weekday peak hours only
+plates_in_2021 = readRDS("data/plates-in-2021-1.Rds")
+
+plates_in_time = plates_in_2021 %>% 
+  mutate(time = data.table::as.ITime(Timestamp),
+         day_of_week = weekdays(as.Date(Timestamp)))
+
+# see https://www.rdocumentation.org/packages/data.table/versions/1.14.6/topics/IDateTime for time-based filtering
+plates_in_peak = plates_in_time %>% 
+  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday"),
+         # time >= 07:00:00 # not working yet
+         )
+
 in_sum = plates_in_2021 %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
@@ -318,6 +331,8 @@ plates_out_2021 = inner_join(plates_out_2021, out_full_days, by = c("Sensor Name
 
 saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
 
+plates_out_2021 = readRDS("data/plates-out-2021-1.Rds")
+
 # needs calibrating to avoid outlying high values due to parked cars
 out_sum = plates_out_2021 %>% 
   group_by(`Sensor Name`) %>% 
@@ -331,8 +346,6 @@ tm_shape(out_sum) + tm_dots("cars")
 
 
 # Read in 
-plates_in_2021 = readRDS("data/plates-in-2021-1.Rds")
-plates_out_2021 = readRDS("data/plates-out-2021-1.Rds")
 in_sum = readRDS("data/in_sum.Rds")
 out_sum = readRDS("data/out_sum.Rds")
 
