@@ -467,7 +467,8 @@ summary(m1)$r.squared
 # [1] 0.282925 # plates out mean
 # [1] 0.2829909 # plates out sum
 
-ggplot(rnet_joined, aes(all_vehs, cars/7)) + 
+n_days = length(unique(plates_in_2021$day)) # this varies if using weekdays only
+ggplot(rnet_joined, aes(all_vehs, cars/n_days)) + 
   geom_point() + 
   labs(y = "'Plates Out' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver/taxi/motorbike/other commute trips") +
   expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
