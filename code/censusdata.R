@@ -5,6 +5,7 @@ library(tmap)
 library(tidyverse)
 library(stplanr)
 library(sf)
+library(lubridate)
 tmap_mode("view")
 
 northeast = get_pct_zones("north-east", geography = "msoa")
@@ -273,13 +274,13 @@ saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
 
 plates_in_2021 = readRDS("data/plates-in-2021-1.Rds")
 
-# Use weekday peak hours only
+# Use weekday peak hours only - but this reduces the r squared
 plates_in_peak = plates_in_2021 %>% 
-  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday"),
-         hour %in% c(7,8,9,16,17,18)
+  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
+         , hour %in% c(7,8,9,16,17,18)
          )
 
-in_sum = plates_in_peak %>% 
+in_sum = plates_in_2021 %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value), 
             n = n(),
@@ -329,9 +330,20 @@ out_full_days = out_sensor_days %>%
 
 plates_out_2021 = inner_join(plates_out_2021, out_full_days, by = c("Sensor Name", "day")) 
 
+plates_out_2021 = plates_out_2021 %>% 
+  mutate(day_of_week = weekdays(as.Date(Timestamp)),
+         time = hms::as_hms(Timestamp),
+         hour = hour(time))
+
 saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
 
 plates_out_2021 = readRDS("data/plates-out-2021-1.Rds")
+
+# Use weekday peak hours only - but this reduces the r squared
+plates_out_peak = plates_out_2021 %>% 
+  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
+         , hour %in% c(7,8,9,16,17,18)
+  )
 
 # needs calibrating to avoid outlying high values due to parked cars
 out_sum = plates_out_2021 %>% 
@@ -419,7 +431,9 @@ tm_shape(car_2013_sum) + tm_dots() +
 #   )
 # tm_shape(congestion_mean) + tm_dots("mean_congestion")
 
-# Join rnet with UO counts
+# Join rnet with UO counts 
+
+# Plates In
 rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
@@ -438,18 +452,41 @@ ggplot(rnet_joined, aes(all_vehs, cars/7)) +
   labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver/taxi/motorbike/other commute trips") +
   expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
 
-# Join rnet with UO counts
-rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)
+
+
+# Plates Out
+rnet_refs = st_nearest_feature(x = out_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
-rnet_joined = cbind(rnet_feats, car_2013_sum)
+rnet_joined = cbind(rnet_feats, out_sum)
 
 tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
-  tm_shape(car_2013_sum) + tm_dots("mean_cars")
+  tm_shape(out_sum) + tm_dots("cars")
 
 m1 = lm(mean_cars ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
-# [1] 0.008347389
+# [1] 0.282925 # plates out mean
+# [1] 0.2829909 # plates out sum
 
-ggplot(rnet_joined, aes(all_vehs, mean_cars)) + 
+ggplot(rnet_joined, aes(all_vehs, cars/7)) + 
   geom_point() + 
-  labs(y = "Mean cars in UO images 2013", x = "2011 Census car driver commute trips")
+  labs(y = "'Plates Out' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver/taxi/motorbike/other commute trips") +
+  expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
+
+
+
+
+# # Join rnet with UO counts
+# rnet_refs = st_nearest_feature(x = car_2013_sum, y = car_rnet)
+# rnet_feats = car_rnet[rnet_refs, ]
+# rnet_joined = cbind(rnet_feats, car_2013_sum)
+# 
+# tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
+#   tm_shape(car_2013_sum) + tm_dots("mean_cars")
+# 
+# m1 = lm(mean_cars ~ all_vehs, data = rnet_joined)
+# summary(m1)$r.squared
+# # [1] 0.008347389
+# 
+# ggplot(rnet_joined, aes(all_vehs, mean_cars)) + 
+#   geom_point() + 
+#   labs(y = "Mean cars in UO images 2013", x = "2011 Census car driver commute trips")
