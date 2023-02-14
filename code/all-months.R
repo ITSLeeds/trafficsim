@@ -6,11 +6,12 @@ for(i in periods) {
     filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% 
     filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>% 
     filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
-  assign(paste0("plates_in_", i), x)
+  i_formatted = gsub(pattern = "-", replacement = "_", x = i)
+  assign(paste0("plates_in_", i_formatted), x)
 }
 
 # Find out which days have incomplete data
-months = paste0("2021-", 1:12)
+months = paste0("2021_", 1:12)
 # kept = as.Date(NULL)
 for(i in months) {
   x = get(paste0("plates_in_", i))
@@ -43,7 +44,7 @@ for(i in months) {
   x = x %>% 
     mutate(day_of_week = weekdays(as.Date(Timestamp)),
            time = hms::as_hms(Timestamp),
-           hour = hour(time))
+           hour = lubridate::hour(time))
   x = x %>% 
     mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
            coords = sub(pattern = ".*\\(", replacement = "", coords))

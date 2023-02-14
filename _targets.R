@@ -64,14 +64,76 @@ list(
     #   download_urban_data(period = i, dataset = "People%20Count")
     # }
   }),
-  tar_target(download_2013, {
-    periods = paste0("201", 3:9, "-86400")
-    for (i in periods) {
-      download_urban_data(period = i, 
-                          dataset = "Vehicle%20Count",
-                          base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
+  tar_target(plates_2021, {
+    periods = paste0("2021-", 1:12)
+    for(i in periods) {
+      filepath = paste0("data/", i, "-Plates In.csv")
+      x = read_csv(filepath)
+      x = x %>% 
+        filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% 
+        filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>% 
+        filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
+      i_formatted = gsub(pattern = "-", replacement = "_", x = i)
+      assign(paste0("plates_in_", i_formatted), x)
     }
+
+    months = paste0("2021_", 1:12)
+    # kept = as.Date(NULL)
+    for(i in months) {
+      x = get(paste0("plates_in_", i))
+      x = x %>% 
+        mutate(day = as.Date(Timestamp))
+      in_day = x %>% 
+        group_by(`Sensor Name`, day) %>% 
+        summarise(cars_day = sum(Value))
+      in_max = in_day %>% 
+        group_by(`Sensor Name`) %>% 
+        summarise(day_max = max(cars_day),
+                  day_medi = median(cars_day)) 
+      in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
+      in_full_days = in_sensor_days %>%
+        filter(cars_day > (day_max/5)) # 20% of peak traffic counts as a full record
+      day_by_day = in_full_days %>% 
+        group_by(day) %>% 
+        summarise(n = n())
+      keep_days = day_by_day %>% 
+        filter(n > 100) # need full records for at least 100 sensors
+      keep_days = keep_days$day
+      # kept = c(kept, keep_days)
+      working_sensors = in_sensor_days %>% 
+        filter(day_medi > 0) %>% 
+        select(`Sensor Name`) %>% 
+        distinct()
+      x = x %>% 
+        filter(day %in% keep_days, # only include days with full records for 100 sensors
+               `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars on most days
+      x = x %>% 
+        mutate(day_of_week = weekdays(as.Date(Timestamp)),
+               time = hms::as_hms(Timestamp),
+               hour = lubridate::hour(time))
+      x = x %>% 
+        mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
+               coords = sub(pattern = ".*\\(", replacement = "", coords))
+      x = x %>% 
+        mutate(long = sub(pattern = " .*", replacement = "", coords),
+               lat = sub(pattern = ".* ", replacement = "", coords),
+               day = as.Date(Timestamp))
+      x = st_as_sf(x, coords = c("long", "lat"))
+      st_crs(x) = 4326
+      assign(paste0("plates_in_", i), x)
+      filename = paste0("data/plates_in_", i, ".Rds")
+      saveRDS(x, filename)
+    }
+    
   }),
+  # tar_target(download_2013, {
+  #   periods = paste0("201", 3:9, "-86400")
+  #   for (i in periods) {
+  #     download_urban_data(period = i, 
+  #                         dataset = "Vehicle%20Count",
+  #                         base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
+  #   }
+  # }),
   tar_target(car_count_2021, {
     # hourly aggregated
     car_count_2021 = read_csv("data/2021-1-Car Count.csv")
@@ -82,23 +144,23 @@ list(
     car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
     st_crs(car_count_2021) = 4326
   }), 
-  tar_target(plates_2021, {
-    # hourly aggregated
-    plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
-    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
-    # plates_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
-    st_crs(plates_in_2021) = 4326
-    plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
-    # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
-    # plates_2021 %>%
-    #   group_by(`Sensor Name`) %>%
-    #   summarise(n = n())
-    plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
-    st_crs(plates_out_2021) = 4326
-  }), 
+  # tar_target(plates_2021, {
+  #   # hourly aggregated
+  #   plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
+  #   # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+  #   # plates_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   plates_in_2021 = st_as_sf(plates_in_2021, wkt = "Location (WKT)")
+  #   st_crs(plates_in_2021) = 4326
+  #   plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
+  #   # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
+  #   # plates_2021 %>%
+  #   #   group_by(`Sensor Name`) %>%
+  #   #   summarise(n = n())
+  #   plates_out_2021 = st_as_sf(plates_out_2021, wkt = "Location (WKT)")
+  #   st_crs(plates_out_2021) = 4326
+  # }), 
   tar_target(traffic_flow_2021, {
     # hourly aggregated
     traffic_flow_2021 = read_csv("data/2021-1-Traffic Flow.csv")
@@ -128,21 +190,21 @@ list(
     #   summarise(n = n())
     congestion_2021 = st_as_sf(congestion_2021, wkt = "Location (WKT)")
     st_crs(congestion_2021) = 4326
-  }), 
-tar_target(car_sum, {
-  car_sum = car_count_2021 %>% 
-    group_by(`Sensor Name`) %>% 
-    summarise(cars = sum(Value),
-              n = n())
-  }),
-tar_target(car_2017, { # 21 locations
-  car_2017 = read.csv("data/2022-86400-Plates%20In.csv")
-  car_2017 = st_as_sf(car_2017, wkt = "Location..WKT.")
-  st_crs(car_2017) = 4326
-  car_2017_sum = car_2017 %>% 
-    group_by(Sensor.Name) %>% 
-    summarise(mean_cars = mean(Mean.Value),
-              n = n())
+#   }), 
+# tar_target(car_sum, {
+#   car_sum = car_count_2021 %>% 
+#     group_by(`Sensor Name`) %>% 
+#     summarise(cars = sum(Value),
+#               n = n())
+#   }),
+# tar_target(car_2017, { # 21 locations
+#   car_2017 = read.csv("data/2022-86400-Plates%20In.csv")
+#   car_2017 = st_as_sf(car_2017, wkt = "Location..WKT.")
+#   st_crs(car_2017) = 4326
+#   car_2017_sum = car_2017 %>% 
+#     group_by(Sensor.Name) %>% 
+#     summarise(mean_cars = mean(Mean.Value),
+#               n = n())
 })
 # ,
 # tar_target(walking_routes, {
