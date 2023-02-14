@@ -269,25 +269,47 @@ plates_in_2021 = plates_in_2021 %>%
          time = hms::as_hms(Timestamp),
          hour = hour(time))
 
-saveRDS(plates_in_2021, "data/plates-in-2021-1.Rds")
+saveRDS(plates_in_2021, "data/plates_in_2021_1.Rds")
 # needs calibrating to avoid outlying high values due to parked cars
 
-plates_in_2021 = readRDS("data/plates-in-2021-1.Rds")
+plates_in_2021 = readRDS("data/plates_in_2021_1.Rds")
 
-# Use weekday peak hours only - but this reduces the r squared
-plates_in_peak = plates_in_2021 %>% 
-  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
-         , hour %in% c(7,8,9,16,17,18)
-         )
-
-in_sum = plates_in_2021 %>% 
+in_sd_mean = plates_in_2021 %>% 
+  st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
-  summarise(cars = sum(Value), 
-            n = n(),
-            mean_cars = mean(Value)
+  summarise(n = n(),
+            mean_cars = mean(Value),
+            sd_cars = sd(Value)
   )
 
-saveRDS(in_sum, "data/in_sum.Rds")
+# remove extreme outliers (parked cars?)
+plates_in_corrected = inner_join(plates_in_2021, in_sd_mean, by = "Sensor Name")
+plates_in_corrected = plates_in_corrected %>% 
+  mutate(Value = case_when(Value > (mean_cars + 6 * sd_cars) ~ mean_cars, 
+                           TRUE ~ Value)
+         )
+
+# Use weekday peak hours only - but this reduces the r squared
+plates_in_peak = plates_in_corrected %>% 
+  filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
+         , hour %in% c(7,8,9,16,17,18)
+  )
+
+in_group = plates_in_corrected %>% 
+# in_sum = plates_in_peak %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(cars = sum(Value))
+sensor_locations = plates_in_corrected %>% 
+  select(`Sensor Name`) %>% 
+  group_by(`Sensor Name`) %>% 
+  filter(row_number() == 1)
+in_sum = left_join(in_group, sensor_locations, by = "Sensor Name")
+in_sum = st_as_sf(in_sum)
+st_crs(in_sum) = 4326
+
+filename = paste0("data/in_sum_", 1, ".Rds")
+saveRDS(in_sum, filename)
 tm_shape(in_sum) + tm_dots("cars")
 
 
@@ -335,9 +357,9 @@ plates_out_2021 = plates_out_2021 %>%
          time = hms::as_hms(Timestamp),
          hour = hour(time))
 
-saveRDS(plates_out_2021, "data/plates-out-2021-1.Rds")
+saveRDS(plates_out_2021, "data/plates_out_2021_1.Rds")
 
-plates_out_2021 = readRDS("data/plates-out-2021-1.Rds")
+plates_out_2021 = readRDS("data/plates_out_2021_1.Rds")
 
 # Use weekday peak hours only - but this reduces the r squared
 plates_out_peak = plates_out_2021 %>% 
@@ -362,13 +384,13 @@ in_sum = readRDS("data/in_sum.Rds")
 out_sum = readRDS("data/out_sum.Rds")
 
 # these are in the same location but have different car counts:
-per = plates_in_2021 %>% 
+per = plates_in_corrected %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A" | `Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 # opposite side of the road
 per2 = plates_in_2021 %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_NB4")
 
-per1 = plates_in_2021 %>% 
+per1 = plates_in_corrected %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 sum(per1$Value)
 # [1] 33097
