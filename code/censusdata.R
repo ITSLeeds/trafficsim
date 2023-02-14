@@ -430,10 +430,12 @@ foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
 bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
 car_rnet = readRDS("data/drive_rnet_jittered.Rds")
 
+inn = in_sum %>% 
+  rename(plates_in = cars)
 tm_shape(car_rnet) + 
   tm_lines("all_vehs", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(in_sum) + tm_dots("cars")
+  tm_shape(inn) + tm_dots("plates_in")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("all_vehs")
