@@ -211,7 +211,7 @@ tm_shape(car_rnet) +
 
 # Plates In ---------------------------------------------------------------
 
-plates_in_2021 = read_csv("data/2021-1-Plates In.csv")
+plates_in_2021 = read_csv("data/2021-2-Plates In.csv")
 
 # Remove bus sensors and test/dummy sensors
 plates_in_2021 = plates_in_2021 %>% 
@@ -272,7 +272,7 @@ plates_in_2021 = plates_in_2021 %>%
 saveRDS(plates_in_2021, "data/plates_in_2021_1.Rds")
 # needs calibrating to avoid outlying high values due to parked cars
 
-plates_in_2021 = readRDS("data/plates_in_2021_1.Rds")
+plates_in_2021 = readRDS("data/plates_in_2021_2.Rds")
 
 in_sd_mean = plates_in_2021 %>% 
   st_drop_geometry() %>% 
@@ -308,14 +308,20 @@ in_sum = left_join(in_group, sensor_locations, by = "Sensor Name")
 in_sum = st_as_sf(in_sum)
 st_crs(in_sum) = 4326
 
-filename = paste0("data/in_sum_", 1, ".Rds")
+filename = paste0("data/in_sum_", 2, ".Rds")
 saveRDS(in_sum, filename)
+
+# Map sensor locations
+length(unique(plates_in_corrected$day))
+in_map = in_sum %>% 
+  mutate(`Mean daily plates in` = cars/28)
+tm_shape(in_map) + tm_dots("Mean daily plates in", size = 0.08)
 tm_shape(in_sum) + tm_dots("cars")
 
 
 # Plates Out --------------------------------------------------------------
 
-plates_out_2021 = read_csv("data/2021-1-Plates Out.csv")
+plates_out_2021 = read_csv("data/2021-2-Plates Out.csv")
 
 # Remove bus sensors and test/dummy sensors
 plates_out_2021 = plates_out_2021 %>% 
@@ -431,11 +437,13 @@ bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
 car_rnet = readRDS("data/drive_rnet_jittered.Rds")
 
 inn = in_sum %>% 
-  rename(plates_in = cars)
-tm_shape(car_rnet) + 
-  tm_lines("all_vehs", 
+  mutate(`Mean daily plates in` = cars/28)
+map_net = car_rnet %>% 
+  mutate(`Commute route network` = all_vehs)
+tm_shape(map_net) + 
+  tm_lines("Commute route network", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(inn) + tm_dots("plates_in")
+  tm_shape(inn) + tm_dots("Mean daily plates in", size = 0.08)
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("all_vehs")
