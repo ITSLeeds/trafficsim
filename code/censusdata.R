@@ -282,25 +282,25 @@ in_sd_mean = plates_in_2021 %>%
             sd_cars = sd(Value)
   )
 
-# remove extreme outliers (parked cars?)
-plates_in_corrected = inner_join(plates_in_2021, in_sd_mean, by = "Sensor Name")
-plates_in_corrected = plates_in_corrected %>% 
-  mutate(Value = case_when(Value > (mean_cars + 6 * sd_cars) ~ mean_cars, 
-                           TRUE ~ Value)
-         )
+plates_in_sd = inner_join(plates_in_2021, in_sd_mean, by = "Sensor Name")
+# remove extreme outliers (parked cars?) - not required:
+# plates_in_corrected = plates_in_sd %>% 
+#   mutate(Value = case_when(Value > (mean_cars + 6 * sd_cars) ~ mean_cars, 
+#                            TRUE ~ Value)
+#          )
 
 # Use weekday peak hours only - but this reduces the r squared
-plates_in_peak = plates_in_corrected %>% 
+plates_in_peak = plates_in_sd %>% 
   filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
          , hour %in% c(7,8,9,16,17,18)
   )
 
-in_group = plates_in_corrected %>% 
+in_group = plates_in_sd %>% 
 # in_sum = plates_in_peak %>% 
   st_drop_geometry() %>% 
   group_by(`Sensor Name`) %>% 
   summarise(cars = sum(Value))
-sensor_locations = plates_in_corrected %>% 
+sensor_locations = plates_in_sd %>% 
   select(`Sensor Name`) %>% 
   group_by(`Sensor Name`) %>% 
   filter(row_number() == 1)
@@ -312,7 +312,7 @@ filename = paste0("data/in_sum_", 2, ".Rds")
 saveRDS(in_sum, filename)
 
 # Map sensor locations
-length(unique(plates_in_corrected$day))
+length(unique(plates_in_sd$day))
 in_map = in_sum %>% 
   mutate(`Mean daily plates in` = cars/28)
 tm_shape(in_map) + tm_dots("Mean daily plates in", size = 0.08)
@@ -390,13 +390,13 @@ in_sum = readRDS("data/in_sum.Rds")
 out_sum = readRDS("data/out_sum.Rds")
 
 # these are in the same location but have different car counts:
-per = plates_in_corrected %>% 
+per = plates_in_sd %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A" | `Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 # opposite side of the road
 per2 = plates_in_2021 %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_NB4")
 
-per1 = plates_in_corrected %>% 
+per1 = plates_in_sd %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
 sum(per1$Value)
 # [1] 33097
@@ -475,13 +475,17 @@ tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
 
 m1 = lm(cars ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
+# Feb:
+# [1] 0.326276 # plates in sum uncorrected
+# [1] 0.3238171 # plates in sum corrected
+# Jan:
 # [1] 0.05131899 # car count mean
 # [1] 0.2714064 # plates in mean
 # [1] 0.2716468 # plates in sum
 
-ggplot(rnet_joined, aes(all_vehs, cars/7)) + 
+ggplot(rnet_joined, aes(all_vehs, cars/28)) + 
   geom_point() + 
-  labs(y = "'Plates In' daily mean 25th-31st Jan 2021", x = "2011 Census daily car driver/taxi/motorbike/other commute trips") +
+  labs(y = "'Plates In' daily mean Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commute trips") +
   expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
 
 
