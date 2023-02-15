@@ -450,6 +450,8 @@ inn = in_sum %>%
   mutate(`Mean daily plates in` = cars/28)
 map_net = car_rnet %>% 
   mutate(`Commute route network` = all_vehs)
+tm_shape(map_net) + tm_lines("Commute route network", 
+                             breaks = c(0, 500, 1000, 2000, 5000, 15000))
 tm_shape(map_net) + 
   tm_lines("Commute route network", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 

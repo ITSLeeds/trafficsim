@@ -113,4 +113,7 @@ des = desire_lines %>%
 route_id = left_join(route, des, by = c("fromPlace" = "ID"))
 saveRDS(route_id, "data/routes_drive_otp_3_counties.Rds")
 
-
+# Map jittered od
+desire = desire_lines %>% 
+  slice_max(n = 1000, order_by = all_vehs)
+tm_shape(desire) + tm_lines("all_vehs")
