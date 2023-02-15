@@ -270,7 +270,7 @@ plates_in_2021 = plates_in_2021 %>%
          hour = hour(time))
 
 saveRDS(plates_in_2021, "data/plates_in_2021_1.Rds")
-# needs calibrating to avoid outlying high values due to parked cars
+# needs calibrating to avoid time-sensitive analyses during periods with outlying high values
 
 plates_in_2021 = readRDS("data/plates_in_2021_2.Rds")
 
@@ -282,12 +282,22 @@ in_sd_mean = plates_in_2021 %>%
             sd_cars = sd(Value)
   )
 
+# Data quality checking
 plates_in_sd = inner_join(plates_in_2021, in_sd_mean, by = "Sensor Name")
 # remove extreme outliers (parked cars?) - not required:
 # plates_in_corrected = plates_in_sd %>% 
 #   mutate(Value = case_when(Value > (mean_cars + 6 * sd_cars) ~ mean_cars, 
 #                            TRUE ~ Value)
 #          )
+
+# # testing:
+# test = plates_in_sd %>% 
+#   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2")
+# tt = test %>% 
+#   st_drop_geometry() %>% 
+#   group_by(day) %>% 
+#   summarise(sum = sum(Value))
+# View(tt)
 
 # Use weekday peak hours only - but this reduces the r squared
 plates_in_peak = plates_in_sd %>% 
