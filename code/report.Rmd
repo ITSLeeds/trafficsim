@@ -1,0 +1,31 @@
+---
+title: "EDIF Use Case: Traffic Flow Modelling with Urban Observatory sensor data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The EDIF project aims to identify use cases for Urban Observatory data....
+
+### Limitations of existing traffic flow modelling
+
+We have 
+
+### Benefits of using UO data
+
+ANPR cameras provide number plate
+
+### Wider applicability
+
+We have created an R function to download UO datasets. 
+This function can be applied to any other datasets that are stored in similar fashion.
+Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
+
+## Results
+
+We have seen that there is a relatively strong correlation between the traffic flows according to the UO sensor data and commute trips from the 2011 Census.
+This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
