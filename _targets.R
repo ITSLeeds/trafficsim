@@ -67,14 +67,17 @@ list(
   tar_target(plates_2021, {
     periods = paste0("2021-", 1:12)
     for(i in periods) {
-      filepath = paste0("data/", i, "-Plates In.csv")
-      x = read_csv(filepath)
-      x = x %>% 
-        filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% 
-        filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>% 
-        filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
       i_formatted = gsub(pattern = "-", replacement = "_", x = i)
-      assign(paste0("plates_in_", i_formatted), x)
+      newfile = file.path("data", paste0("plates_in_", i_formatted, ".Rds"))
+      if(!file.exists(newfile)) {
+        filepath = paste0("data/", i, "-Plates In.csv")
+        x = read_csv(filepath)
+        x = x %>% 
+          filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% 
+          filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>% 
+          filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
+        assign(newfile, x)
+      }
     }
 
     months = paste0("2021_", 1:12)
