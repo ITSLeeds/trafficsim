@@ -19,6 +19,21 @@ We have
 
 ANPR cameras provide number plate
 
+## Methods
+
+### Data quality
+
+Sensors with names containing the string "DUMMY" or "TEST", were excluded, as were sensors missing readings (or with readings showing zero traffic) on the majority of days within a given time period. 
+For traffic data, sensors with names containing the string "BUS" were also excluded, as these appear to represent bus lanes.
+
+The readings were incomplete during some time periods, with sensors only giving occasional readings, perhaps due to weather conditions or other factors.
+If not excluded from the analysis, this would appear to suggest very low traffic counts on certain days.
+Therefore, for the traffic data, we only included sensor readings from days on which at least 100 sensors recorded total traffic volumes of at least 20% of the maximum traffic volume for that sensor.
+For other data, we only included sensor readings from days on which at least half of all sensors recorded a total number of readings at least 20% of the maximum number of daily readings for that sensor.
+
+Sometimes the ANPR cameras don't send any readings for a few hours, then after that they send a single reading that contains the sum of all the vehicle plates recorded over the previous hours. 
+To avoid problems related to this in time-sensitive analyses, we excluded time periods containing less than 10 readings (typically the cameras send readings every 5 minutes), and periods containing a single reading that is greater than 6 standard deviations higher than the mean reading for the given sensor.
+
 ### Wider applicability
 
 We have created an R function to download UO datasets. 

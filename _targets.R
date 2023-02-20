@@ -48,16 +48,17 @@ list(
   }),
   tar_target(download, {
     # period data:
-    year = 2022
+    year = 2021
     periods = paste0(year, "-", 1:12)
     for(i in periods) {
-      download_urban_data(period = i, dataset = "Average%20Speed")
-      # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
-      download_urban_data(period = i, dataset = "Car%20Count")
-      download_urban_data(period = i, dataset = "Congestion")
-      download_urban_data(period = i, dataset = "Traffic%20Flow")
-      download_urban_data(period = i, dataset = "Plates%20In")
-      download_urban_data(period = i, dataset = "Plates%20Out")
+      # download_urban_data(period = i, dataset = "Average%20Speed")
+      # # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
+      # download_urban_data(period = i, dataset = "Car%20Count")
+      # download_urban_data(period = i, dataset = "Congestion")
+      # download_urban_data(period = i, dataset = "Traffic%20Flow")
+      # download_urban_data(period = i, dataset = "Plates%20In")
+      # download_urban_data(period = i, dataset = "Plates%20Out")
+      download_urban_data(period = i, dataset = "PM10")
     }
     # years = as.character(2019:2021)
     # for(i in years) {
@@ -74,11 +75,11 @@ list(
       if(!file.exists(newfile)) {
         filepath = paste0("data/", i, "-Plates In.csv")
         x = read_csv(filepath)
-        x = x %>% 
-          filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% 
-          filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>% 
+        x = x %>%
+          filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>%
+          filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>%
           filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
-        assign(newfile, x)
+        assign(paste0("plates_in_", i_formatted), x)
       }
     }
 
@@ -118,7 +119,8 @@ list(
                hour = lubridate::hour(time))
       x = x %>%
         mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
-               coords = sub(pattern = ".*\\(", replacement = "", coords))
+               coords = sub(pattern = ".*\\(", replacement = "", coords),
+               coords = sub(pattern = "\\)", replacement = "", coords))
       x = x %>%
         mutate(long = sub(pattern = " .*", replacement = "", coords),
                lat = sub(pattern = ".* ", replacement = "", coords),
@@ -129,24 +131,118 @@ list(
       filename = paste0("data/plates_in_", i, ".Rds")
       saveRDS(x, filename)
     }
-    
+
   }),
   # tar_target(download_2013, {
   #   periods = paste0("201", 3:9, "-86400")
   #   for (i in periods) {
-  #     download_urban_data(period = i, 
+  #     download_urban_data(period = i,
   #                         dataset = "Vehicle%20Count",
   #                         base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
   #   }
   # }),
   tar_target(car_count_2021, {
+    pm10 = read_csv("data/2022-1-PM10.csv")
+    pm10 = st_as_sf(pm10, wkt = "Location (WKT)")
+    st_crs(pm10) = 4326
+  }), 
+  tar_target(data_cleaning, {
+    year = 2021
+    sensor = "PM10"
+    sensor_lc = tolower(sensor)
+    sensor_lc = sub(pattern = " ", replacement = "_", sensor_lc)
+    periods = paste0(year, "-", 1:12)
+    for(i in periods) {
+      i_formatted = gsub(pattern = "-", replacement = "_", x = i)
+      newfile = file.path("data", paste0(sensor_lc, "_", i_formatted, ".Rds"))
+      if(!file.exists(newfile)) {
+        filepath = paste0("data/", i, "-", sensor, ".csv")
+        x = read_csv(filepath)
+        x = x %>%
+          # filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% # Use for plates_in etc
+          filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>%
+        filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
+        assign(paste0(sensor_lc, "_", i_formatted), x)
+      # }
+      # if(file.exists(newfile)) {
+      #   x = readRDS(newfile)
+      #   assign(paste0(sensor_lc, "_", i_formatted), x)
+      # }
+    # }
+    # months = paste0(year, "_", 1:12)
+    # # kept = as.Date(NULL)
+    # for(i in months) {
+      x = get(paste0(sensor_lc, "_", i_formatted))
+      x = x %>%
+        mutate(day = as.Date(Timestamp))
+      in_day = x %>%
+        group_by(`Sensor Name`, day) %>%
+        summarise(
+          sum_readings_day = sum(Value),
+          n_readings_day = n()
+          )
+      in_max = in_day %>%
+        group_by(`Sensor Name`) %>%
+        summarise(
+          sum_readings_max = max(sum_readings_day),
+          sum_readings_medi = median(sum_readings_day),
+          n_readings_max = max(n_readings_day),
+          n_readings_medi = median(n_readings_day)
+          )
+      in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
+      in_full_days = in_sensor_days %>%
+        filter(
+          sum_readings_day > (sum_readings_max/5) # for plates, 20% of max traffic counts as a full record
+          # n_readings_day > (n_readings_max/5) # for other sensors, 20% of max n_readings counts as a full record
+          )
+      day_by_day = in_full_days %>%
+        group_by(day) %>%
+        summarise(n = n())
+      keep_days = day_by_day %>%
+        filter(
+          n > 100 # for plates, need full records for at least 100 sensors
+          # n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
+          )
+      keep_days = keep_days$day
+      # kept = c(kept, keep_days)
+      working_sensors = in_sensor_days %>%
+        filter(
+          sum_readings_medi > 0 # for plates (less than half of days have zero traffic)
+          # n_readings_medi > 0 # for other sensors (less than half of days have zero readings)
+          ) %>%
+        select(`Sensor Name`) %>%
+        distinct()
+      x = x %>%
+        filter(day %in% keep_days, # only include days with full records for sufficient sensors
+               `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars/0 readings on most days
+      x = x %>%
+        mutate(day_of_week = weekdays(as.Date(Timestamp)),
+               time = hms::as_hms(Timestamp),
+               hour = lubridate::hour(time))
+      x = x %>%
+        mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
+               coords = sub(pattern = ".*\\(", replacement = "", coords),
+               coords = sub(pattern = "\\)", replacement = "", coords))
+      x = x %>%
+        mutate(long = sub(pattern = " .*", replacement = "", coords),
+               lat = sub(pattern = ".* ", replacement = "", coords),
+               day = as.Date(Timestamp))
+      x = st_as_sf(x, coords = c("long", "lat"))
+      st_crs(x) = 4326
+      assign(paste0(sensor_lc, "_", i_formatted), x)
+      filename = paste0("data/", sensor_lc, "_", i_formatted, ".Rds")
+      saveRDS(x, filename)
+      }
+    }
+  }), 
+  tar_target(car_count, {
     # hourly aggregated
-    car_count_2021 = read_csv("data/2021-1-Car Count.csv")
+   car_count_2021 = read_csv("data/2021-1-Car Count.csv")
     # 207 sensors, 4000-8000 hours of data each (8760hrs in a yr)
     # car_count_2021 %>%
     #   group_by(`Sensor Name`) %>%
     #   summarise(n = n())
-    car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
+   car_count_2021 = st_as_sf(car_count_2021, wkt = "Location (WKT)")
     st_crs(car_count_2021) = 4326
   }), 
   # tar_target(plates_2021, {
@@ -292,4 +388,30 @@ list(
   # })
 )
 
+pm10_group = pm10 %>% 
+  # in_sum = plates_in_peak %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(pm10 = mean(Value))
+sensor_locations = pm10 %>% 
+  select(`Sensor Name`) %>% 
+  group_by(`Sensor Name`) %>% 
+  filter(row_number() == 1)
+in_sum = left_join(pm10_group, sensor_locations, by = "Sensor Name")
+in_sum = st_as_sf(in_sum)
+st_crs(in_sum) = 4326
+tm_shape(in_sum) + tm_dots("pm10")
 
+pm25_group = pm25 %>% 
+  # pm25_sum = plates_in_peak %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(pm25 = mean(Value))
+sensor_locations = pm25 %>% 
+  select(`Sensor Name`) %>% 
+  group_by(`Sensor Name`) %>% 
+  filter(row_number() == 1)
+pm25_sum = left_join(pm25_group, sensor_locations, by = "Sensor Name")
+pm25_sum = st_as_sf(pm25_sum)
+st_crs(pm25_sum) = 4326
+tm_shape(pm25_sum) + tm_dots("pm25")
