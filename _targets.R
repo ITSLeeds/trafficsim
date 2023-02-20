@@ -161,77 +161,66 @@ list(
         x = x %>%
           # filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>% # Use for plates_in etc
           filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>%
-        filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
-        assign(paste0(sensor_lc, "_", i_formatted), x)
-      # }
-      # if(file.exists(newfile)) {
-      #   x = readRDS(newfile)
-      #   assign(paste0(sensor_lc, "_", i_formatted), x)
-      # }
-    # }
-    # months = paste0(year, "_", 1:12)
-    # # kept = as.Date(NULL)
-    # for(i in months) {
-      x = get(paste0(sensor_lc, "_", i_formatted))
-      x = x %>%
-        mutate(day = as.Date(Timestamp))
-      in_day = x %>%
-        group_by(`Sensor Name`, day) %>%
-        summarise(
-          sum_readings_day = sum(Value),
-          n_readings_day = n()
+          filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
+        x = x %>%
+          mutate(day = as.Date(Timestamp))
+        in_day = x %>%
+          group_by(`Sensor Name`, day) %>%
+          summarise(
+            sum_readings_day = sum(Value),
+            n_readings_day = n()
           )
-      in_max = in_day %>%
-        group_by(`Sensor Name`) %>%
-        summarise(
-          sum_readings_max = max(sum_readings_day),
-          sum_readings_medi = median(sum_readings_day),
-          n_readings_max = max(n_readings_day),
-          n_readings_medi = median(n_readings_day)
+        in_max = in_day %>%
+          group_by(`Sensor Name`) %>%
+          summarise(
+            sum_readings_max = max(sum_readings_day),
+            sum_readings_medi = median(sum_readings_day),
+            n_readings_max = max(n_readings_day),
+            n_readings_medi = median(n_readings_day)
           )
-      in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
-      in_full_days = in_sensor_days %>%
-        filter(
-          sum_readings_day > (sum_readings_max/5) # for plates, 20% of max traffic counts as a full record
-          # n_readings_day > (n_readings_max/5) # for other sensors, 20% of max n_readings counts as a full record
+        in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
+        in_full_days = in_sensor_days %>%
+          filter(
+            # sum_readings_day > (sum_readings_max/5) # for plates, 20% of max traffic counts as a full record
+            n_readings_day > (n_readings_max/5) # for other sensors, 20% of max n_readings counts as a full record
           )
-      day_by_day = in_full_days %>%
-        group_by(day) %>%
-        summarise(n = n())
-      keep_days = day_by_day %>%
-        filter(
-          n > 100 # for plates, need full records for at least 100 sensors
-          # n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
+        day_by_day = in_full_days %>%
+          group_by(day) %>%
+          summarise(n = n())
+        keep_days = day_by_day %>%
+          filter(
+            # n > 100 # for plates, need full records for at least 100 sensors
+            n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
           )
-      keep_days = keep_days$day
-      # kept = c(kept, keep_days)
-      working_sensors = in_sensor_days %>%
-        filter(
-          sum_readings_medi > 0 # for plates (less than half of days have zero traffic)
-          # n_readings_medi > 0 # for other sensors (less than half of days have zero readings)
+        keep_days = keep_days$day
+        # kept = c(kept, keep_days)
+        working_sensors = in_sensor_days %>%
+          filter(
+            # sum_readings_medi > 0 # for plates (less than half of days have zero traffic)
+            n_readings_medi > 0 # for other sensors (less than half of days have zero readings)
           ) %>%
-        select(`Sensor Name`) %>%
-        distinct()
-      x = x %>%
-        filter(day %in% keep_days, # only include days with full records for sufficient sensors
-               `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars/0 readings on most days
-      x = x %>%
-        mutate(day_of_week = weekdays(as.Date(Timestamp)),
-               time = hms::as_hms(Timestamp),
-               hour = lubridate::hour(time))
-      x = x %>%
-        mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
-               coords = sub(pattern = ".*\\(", replacement = "", coords),
-               coords = sub(pattern = "\\)", replacement = "", coords))
-      x = x %>%
-        mutate(long = sub(pattern = " .*", replacement = "", coords),
-               lat = sub(pattern = ".* ", replacement = "", coords),
-               day = as.Date(Timestamp))
-      x = st_as_sf(x, coords = c("long", "lat"))
-      st_crs(x) = 4326
-      assign(paste0(sensor_lc, "_", i_formatted), x)
-      filename = paste0("data/", sensor_lc, "_", i_formatted, ".Rds")
-      saveRDS(x, filename)
+          select(`Sensor Name`) %>%
+          distinct()
+        x = x %>%
+          filter(day %in% keep_days, # only include days with full records for sufficient sensors
+                 `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars/0 readings on most days
+        x = x %>%
+          mutate(day_of_week = weekdays(as.Date(Timestamp)),
+                 time = hms::as_hms(Timestamp),
+                 hour = lubridate::hour(time))
+        x = x %>%
+          mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
+                 coords = sub(pattern = ".*\\(", replacement = "", coords),
+                 coords = sub(pattern = "\\)", replacement = "", coords))
+        x = x %>%
+          mutate(long = sub(pattern = " .*", replacement = "", coords),
+                 lat = sub(pattern = ".* ", replacement = "", coords),
+                 day = as.Date(Timestamp))
+        x = st_as_sf(x, coords = c("long", "lat"))
+        st_crs(x) = 4326
+        assign(paste0(sensor_lc, "_", i_formatted), x)
+        filename = paste0("data/", sensor_lc, "_", i_formatted, ".Rds")
+        saveRDS(x, filename)
       }
     }
   }), 
