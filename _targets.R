@@ -221,30 +221,37 @@ list(
           st_drop_geometry() %>% 
           group_by(`Sensor Name`) %>% 
           summarise(n = n(),
+                    median_reading = median(Value),
                     mean_reading = mean(Value),
                     sd_reading = sd(Value)
           )
         sensor_sd = inner_join(x, in_sd_mean, by = "Sensor Name")
+        # Optional further data cleaning:
+        # Now remove any delayed readings if doing analysis based on short time periods
         # sensor_peak = sensor_sd %>% 
         #   filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
         #          , hour %in% c(7,8,9,16,17,18)
         #   )
-        # Now remove any delayed readings if doing analysis based on short time periods
         sensor_group = sensor_sd %>% 
           st_drop_geometry() %>% 
           group_by(`Sensor Name`) %>% 
-          summarise(mean_value = mean(Value))
+          summarise(
+            n = n(),
+            median_value = median(Value),
+            mean_value = mean(Value),
+            sd_value = sd(Value)
+            )
         sensor_locations = sensor_sd %>% 
           select(`Sensor Name`) %>% 
           group_by(`Sensor Name`) %>% 
           filter(row_number() == 1)
-        sensor_mean = left_join(sensor_group, sensor_locations, by = "Sensor Name")
-        sensor_mean = st_as_sf(sensor_mean)
-        st_crs(sensor_mean) = 4326
+        sensor_stats = left_join(sensor_group, sensor_locations, by = "Sensor Name")
+        sensor_stats = st_as_sf(sensor_stats)
+        st_crs(sensor_stats) = 4326
         
         filename = paste0("data/", sensor_lc, "_grouped_", i_formatted, ".Rds")
-        saveRDS(sensor_mean, filename)
-        # tm_shape(sensor_mean) + tm_dots("mean_value")
+        saveRDS(sensor_stats, filename)
+        # tm_shape(sensor_stats) + tm_dots("median_value")
       }
     }
   }), 

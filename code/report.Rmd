@@ -44,3 +44,10 @@ Parameters such as dataset name, time period desired, and the base URL, can be a
 
 We have seen that there is a relatively strong correlation between the traffic flows according to the UO sensor data and commute trips from the 2011 Census.
 This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
+
+## Traffic flow and air pollution
+
+The PM10 values at some sensors are subject to extreme spikes, which appear to be related to particular events. 
+Figure 1 shows the height of these spikes at two Newcastle sensors, alongside a more regular pattern of PM10 levels at a city centre sensor.
+We are not aware of the nature of these events that caused these spikes, but they do not appear to be relevant for comparing air pollution to typical traffic flows.
+Therefore we assess PM10 levels using the median value at each sensor to minimise the impact of these spikes.
