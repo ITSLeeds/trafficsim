@@ -67,7 +67,7 @@ list(
     # }
   }),
   tar_target(plates_2021, {
-    year = 2022
+    year = 2021
     periods = paste0(year, "-", 1:12)
     for(i in periods) {
       i_formatted = gsub(pattern = "-", replacement = "_", x = i)
@@ -79,57 +79,50 @@ list(
           filter(str_detect(pattern = "BUS", `Sensor Name`) == FALSE) %>%
           filter(str_detect(pattern = "DUMMY", `Sensor Name`) == FALSE) %>%
           filter(str_detect(pattern = "TEST", `Sensor Name`) == FALSE)
+        
+        x = x %>%
+          mutate(day = as.Date(Timestamp))
+        in_day = x %>%
+          group_by(`Sensor Name`, day) %>%
+          summarise(cars_day = sum(Value))
+        in_max = in_day %>%
+          group_by(`Sensor Name`) %>%
+          summarise(day_max = max(cars_day),
+                    day_medi = median(cars_day))
+        in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
+        in_full_days = in_sensor_days %>%
+          filter(cars_day > (day_max/5)) # 20% of peak traffic counts as a full record
+        day_by_day = in_full_days %>%
+          group_by(day) %>%
+          summarise(n = n())
+        keep_days = day_by_day %>%
+          filter(n > 100) # need full records for at least 100 sensors
+        keep_days = keep_days$day
+        # kept = c(kept, keep_days)
+        working_sensors = in_sensor_days %>%
+          filter(day_medi > 0) %>%
+          select(`Sensor Name`) %>%
+          distinct()
+        x = x %>%
+          filter(day %in% keep_days, # only include days with full records for 100 sensors
+                 `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars on most days
+        x = x %>%
+          mutate(day_of_week = weekdays(as.Date(Timestamp)),
+                 time = hms::as_hms(Timestamp),
+                 hour = lubridate::hour(time))
+        x = x %>%
+          mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
+                 coords = sub(pattern = ".*\\(", replacement = "", coords),
+                 coords = sub(pattern = "\\)", replacement = "", coords))
+        x = x %>%
+          mutate(long = sub(pattern = " .*", replacement = "", coords),
+                 lat = sub(pattern = ".* ", replacement = "", coords),
+                 day = as.Date(Timestamp))
+        x = st_as_sf(x, coords = c("long", "lat"))
+        st_crs(x) = 4326
         assign(paste0("plates_in_", i_formatted), x)
+        saveRDS(x, newfile)
       }
-    }
-
-    months = paste0(year, "_", 1:12)
-    # kept = as.Date(NULL)
-    for(i in months) {
-      x = get(paste0("plates_in_", i))
-      x = x %>%
-        mutate(day = as.Date(Timestamp))
-      in_day = x %>%
-        group_by(`Sensor Name`, day) %>%
-        summarise(cars_day = sum(Value))
-      in_max = in_day %>%
-        group_by(`Sensor Name`) %>%
-        summarise(day_max = max(cars_day),
-                  day_medi = median(cars_day))
-      in_sensor_days = inner_join(in_day, in_max, by = "Sensor Name")
-      in_full_days = in_sensor_days %>%
-        filter(cars_day > (day_max/5)) # 20% of peak traffic counts as a full record
-      day_by_day = in_full_days %>%
-        group_by(day) %>%
-        summarise(n = n())
-      keep_days = day_by_day %>%
-        filter(n > 100) # need full records for at least 100 sensors
-      keep_days = keep_days$day
-      # kept = c(kept, keep_days)
-      working_sensors = in_sensor_days %>%
-        filter(day_medi > 0) %>%
-        select(`Sensor Name`) %>%
-        distinct()
-      x = x %>%
-        filter(day %in% keep_days, # only include days with full records for 100 sensors
-               `Sensor Name` %in% working_sensors$`Sensor Name`) # exclude sensors with 0 cars on most days
-      x = x %>%
-        mutate(day_of_week = weekdays(as.Date(Timestamp)),
-               time = hms::as_hms(Timestamp),
-               hour = lubridate::hour(time))
-      x = x %>%
-        mutate(coords = sub(pattern = ",.*", replacement = "", `Location (WKT)`),
-               coords = sub(pattern = ".*\\(", replacement = "", coords),
-               coords = sub(pattern = "\\)", replacement = "", coords))
-      x = x %>%
-        mutate(long = sub(pattern = " .*", replacement = "", coords),
-               lat = sub(pattern = ".* ", replacement = "", coords),
-               day = as.Date(Timestamp))
-      x = st_as_sf(x, coords = c("long", "lat"))
-      st_crs(x) = 4326
-      assign(paste0("plates_in_", i), x)
-      filename = paste0("data/plates_in_", i, ".Rds")
-      saveRDS(x, filename)
     }
 
   }),
@@ -141,11 +134,11 @@ list(
   #                         base_url = "https://archive.dev.urbanobservatory.ac.uk/file/year_agg_file/")
   #   }
   # }),
-  tar_target(car_count_2021, {
-    pm10 = read_csv("data/2022-1-PM10.csv")
-    pm10 = st_as_sf(pm10, wkt = "Location (WKT)")
-    st_crs(pm10) = 4326
-  }), 
+  # tar_target(car_count_2021, {
+  #   pm10 = read_csv("data/2022-1-PM10.csv")
+  #   pm10 = st_as_sf(pm10, wkt = "Location (WKT)")
+  #   st_crs(pm10) = 4326
+  # }), 
   tar_target(data_cleaning, {
     year = 2021
     sensor = "PM10"
@@ -408,30 +401,30 @@ list(
   # })
 )
 
-pm10_group = pm10 %>% 
-  # in_sum = plates_in_peak %>% 
-  st_drop_geometry() %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(pm10 = mean(Value))
-sensor_locations = pm10 %>% 
-  select(`Sensor Name`) %>% 
-  group_by(`Sensor Name`) %>% 
-  filter(row_number() == 1)
-in_sum = left_join(pm10_group, sensor_locations, by = "Sensor Name")
-in_sum = st_as_sf(in_sum)
-st_crs(in_sum) = 4326
-tm_shape(in_sum) + tm_dots("pm10")
-
-pm25_group = pm25 %>% 
-  # pm25_sum = plates_in_peak %>% 
-  st_drop_geometry() %>% 
-  group_by(`Sensor Name`) %>% 
-  summarise(pm25 = mean(Value))
-sensor_locations = pm25 %>% 
-  select(`Sensor Name`) %>% 
-  group_by(`Sensor Name`) %>% 
-  filter(row_number() == 1)
-pm25_sum = left_join(pm25_group, sensor_locations, by = "Sensor Name")
-pm25_sum = st_as_sf(pm25_sum)
-st_crs(pm25_sum) = 4326
-tm_shape(pm25_sum) + tm_dots("pm25")
+# pm10_group = pm10 %>% 
+#   # in_sum = plates_in_peak %>% 
+#   st_drop_geometry() %>% 
+#   group_by(`Sensor Name`) %>% 
+#   summarise(pm10 = mean(Value))
+# sensor_locations = pm10 %>% 
+#   select(`Sensor Name`) %>% 
+#   group_by(`Sensor Name`) %>% 
+#   filter(row_number() == 1)
+# in_sum = left_join(pm10_group, sensor_locations, by = "Sensor Name")
+# in_sum = st_as_sf(in_sum)
+# st_crs(in_sum) = 4326
+# tm_shape(in_sum) + tm_dots("pm10")
+# 
+# pm25_group = pm25 %>% 
+#   # pm25_sum = plates_in_peak %>% 
+#   st_drop_geometry() %>% 
+#   group_by(`Sensor Name`) %>% 
+#   summarise(pm25 = mean(Value))
+# sensor_locations = pm25 %>% 
+#   select(`Sensor Name`) %>% 
+#   group_by(`Sensor Name`) %>% 
+#   filter(row_number() == 1)
+# pm25_sum = left_join(pm25_group, sensor_locations, by = "Sensor Name")
+# pm25_sum = st_as_sf(pm25_sum)
+# st_crs(pm25_sum) = 4326
+# tm_shape(pm25_sum) + tm_dots("pm25")
