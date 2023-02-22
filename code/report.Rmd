@@ -52,7 +52,8 @@ Figure 1 shows the height of these spikes at two Newcastle sensors, alongside a 
 We are not aware of the nature of these events that caused these spikes, but they do not appear to be relevant for comparing air pollution to typical traffic flows.
 Therefore we assess PM10 levels using the median value at each sensor to minimise the impact of these spikes.
 
-We investigated whether traffic volumes could best predict PM10 particulate air pollution on the basis of area, road identity or road type. 
-For the area effect, we assessed correlations between sensors within the same MSOA.
-For road identity, we compared sensors on roads with the same reference (e.g. "A167").
-For road type, we compared sensors on trunk, primary, secondary, and tertiary roads.
+We investigated whether traffic volumes could best predict PM10 particulate air pollution on the basis of locality or road identity. 
+For the locality effect, we assessed correlations between sensors within the same MSOA.
+For road identity, we compared assigned sensors to their nearest road and assessed correlations between sensors on roads with the same reference (e.g. "A167").
+When assigning the sensors to roads, we did not allow the traffic sensors to be matched with residential, service or unclassified roads, as these appeared to be false matches.
+The air pollution sensors were allowed to be matched to residential roads, but not to service or unclassified roads.
