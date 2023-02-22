@@ -16,22 +16,34 @@ pm10_records = readRDS("data/pm10_2021_2.Rds")
 
 osm = readRDS("data/osm_drive_2023-01-17.Rds")
 
+# Prevent false matches with minor roads
+osm_nores = osm %>% 
+  filter(
+    !highway == "service",
+    !highway == "unclassified",
+    !highway == "residential"
+    )
+osm_nounc = osm %>% 
+  filter(
+    !highway == "service",
+    !highway == "unclassified"
+  )
+
+
 # Join OSM with plates in
-traffic_osm = st_join(traffic, osm)
-nearest = st_nearest_feature(traffic, osm)
-nn = osm[nearest,] %>% 
+nearest = st_nearest_feature(traffic, osm_nores)
+nn = osm_nores[nearest,] %>% 
   st_drop_geometry()
 traffic_osm = bind_cols(traffic, nn)
 
-tm_shape(traffic_osm) + tm_dots("lanes")
+tm_shape(traffic_osm) + tm_dots("highway")
 
 # Join OSM with PM10
-pm10_osm = st_join(pm10, osm)
-nearest = st_nearest_feature(pm10, osm)
-np = osm[nearest,] %>% 
+nearest = st_nearest_feature(pm10, osm_nounc)
+np = osm_nounc[nearest,] %>% 
   st_drop_geometry()
 pm10_osm = bind_cols(pm10, np)
-tm_shape(pm10_osm) + tm_dots("ref")
+tm_shape(pm10_osm) + tm_dots("highway")
 
 # Checking extreme values -------------------------------------------------
 
@@ -149,7 +161,7 @@ ggplot(by_ref, aes(mean_traffic, mean_pm10)) +
   geom_point()
 m1 = lm(mean_pm10 ~ mean_traffic, data = by_ref)
 summary(m1)$r.squared
-# [1] 0.08246465
+# [1] 0.1020857
 
 pm10_missing = pm10_osm %>%
   filter(!ref %in% by_ref$ref)
@@ -188,7 +200,7 @@ ggplot(join_traffic, aes(mean_traffic, mean_pm10)) +
   geom_point()
 m1 = lm(mean_pm10 ~ mean_traffic, data = join_traffic)
 summary(m1)$r.squared
-# [1] 0.1035397
+# [1] 0.1479101
 
 
 # Sensors on same road type -----------------------------------------------
@@ -209,4 +221,4 @@ ggplot(by_highway, aes(mean_traffic, mean_pm10)) +
   geom_point()
 m1 = lm(mean_pm10 ~ mean_traffic, data = by_highway)
 summary(m1)$r.squared
-# [1] 0.1795027
+# [1] 0.07241296

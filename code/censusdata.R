@@ -479,14 +479,15 @@ tm_shape(car_2013_sum) + tm_dots() +
 # Join rnet with UO counts 
 
 # Plates In
+# Should find a way of removing residential/unclassified/service roads, these will be false matches
 rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
 
 tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
-  tm_shape(in_sum) + tm_dots("cars")
+  tm_shape(in_sum) + tm_dots("sum_plates")
 
-m1 = lm(cars ~ all_vehs, data = rnet_joined)
+m1 = lm(sum_plates ~ all_vehs, data = rnet_joined)
 summary(m1)$r.squared
 # Feb:
 # [1] 0.326276 # plates in sum uncorrected
