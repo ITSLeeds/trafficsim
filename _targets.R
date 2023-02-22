@@ -47,31 +47,15 @@ list(
     #   summarise(n = n())
   }),
   tar_target(download, {
-    # period data:
-    year = 2021
-    periods = paste0(year, "-", 1:12)
-    for(i in periods) {
-      # download_urban_data(period = i, dataset = "Average%20Speed")
-      # # https://archive.dev.urbanobservatory.ac.uk/file/month_file/2021-1-Car%20Count.csv.zip
-      # download_urban_data(period = i, dataset = "Car%20Count")
-      # download_urban_data(period = i, dataset = "Congestion")
-      # download_urban_data(period = i, dataset = "Traffic%20Flow")
-      # download_urban_data(period = i, dataset = "Plates%20In")
-      # download_urban_data(period = i, dataset = "Plates%20Out")
-      download_urban_data(period = i, dataset = "PM10")
-    }
-    # years = as.character(2019:2021)
-    # for(i in years) {
-    #   download_urban_data(period = i, dataset = "People%20Count")
-    #   download_urban_data(period = i, dataset = "People%20Count")
-    # }
-  }),
-  tar_target(plates_2021, {
     year = 2021
     sensor = "Plates In"
     sensor_lc = tolower(sensor)
     sensor_lc = sub(pattern = " ", replacement = "_", sensor_lc)
     periods = paste0(year, "-", 1:12)
+    for(i in periods) {
+      sensor_mod = sub(pattern = " ", replacement = "%20", sensor)
+      download_urban_data(period = i, dataset = sensor_mod)
+    }
     for(i in periods) {
       i_formatted = gsub(pattern = "-", replacement = "_", x = i)
       newfile = file.path("data", paste0("plates_in_", i_formatted, ".Rds"))
@@ -170,10 +154,14 @@ list(
   }),
   tar_target(data_cleaning, {
     year = 2021
+    periods = paste0(year, "-", 1:12)
     sensor = "PM10"
     sensor_lc = tolower(sensor)
     sensor_lc = sub(pattern = " ", replacement = "_", sensor_lc)
-    periods = paste0(year, "-", 1:12)
+    for(i in periods) {
+      sensor_mod = sub(pattern = " ", replacement = "%20", sensor)
+      download_urban_data(period = i, dataset = sensor_mod)
+    }
     for(i in periods) {
       i_formatted = gsub(pattern = "-", replacement = "_", x = i)
       newfile = file.path("data", paste0(sensor_lc, "_", i_formatted, ".Rds"))
