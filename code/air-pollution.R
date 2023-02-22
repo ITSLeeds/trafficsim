@@ -103,17 +103,23 @@ summary(m1)$r.squared
 
 # only 14 LSOAs match both datasets
 
-# join = st_join(northeast_lsoa, pm10) %>% 
-#   group_by(geo_code) %>% 
-#   summarise(mean_pm10 = mean(median_value)) %>% 
-#   filter(!is.na(mean_pm10))
-# tm_shape(join) + tm_polygons("mean_pm10")
-# join_traffic = st_join(join, traffic) %>% 
-#   group_by(geo_code, mean_pm10) %>% 
-#   summarise(mean_traffic = mean(sum_plates)) %>% 
-#   filter(!is.na(mean_traffic))
-# tm_shape(join_traffic) + tm_polygons("mean_pm10")
-# tm_shape(join_traffic) + tm_polygons("mean_traffic")
+join_lsoa = st_join(northeast_lsoa, pm10) %>%
+  group_by(geo_code) %>%
+  summarise(mean_pm10 = mean(median_value)) %>%
+  filter(!is.na(mean_pm10))
+tm_shape(join_lsoa) + tm_polygons("mean_pm10")
+join_lsoa_traffic = st_join(join_lsoa, traffic) %>%
+  group_by(geo_code, mean_pm10) %>%
+  summarise(mean_traffic = mean(sum_plates)) %>%
+  filter(!is.na(mean_traffic))
+tm_shape(join_lsoa_traffic) + tm_polygons("mean_pm10")
+tm_shape(join_lsoa_traffic) + tm_polygons("mean_traffic")
+
+ggplot(join_lsoa_traffic, aes(mean_traffic, mean_pm10)) + 
+  geom_point()
+m1 = lm(mean_pm10 ~ mean_traffic, data = join_lsoa_traffic)
+summary(m1)$r.squared
+# [1] 0.02452623
 
 # Get built-up area bounds or calculate population density
 
