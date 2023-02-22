@@ -4,30 +4,8 @@ tmap_mode("view")
 
 pm10 = readRDS("data/pm10_stats_2021_2.Rds")
 traffic = readRDS("data/plates_in_stats_2021_2.Rds")
+pm10_records = readRDS("data/pm10_2021_2.Rds")
 
-
-# Checking extreme values -------------------------------------------------
-
-per = sensor_sd %>% 
-  filter(`Sensor Name` == "PER_AIRMON_MESH1913150")
-
-ggplot(per, aes(x = Timestamp, y = Value)) +
-  geom_line() + 
-  geom_point()
-
-per = sensor_sd %>% 
-  filter(`Sensor Name` == "PER_AIRMON_MESH1976150")
-
-ggplot(per, aes(x = Timestamp, y = Value)) +
-  geom_line() + 
-  geom_point()
-
-per = sensor_sd %>% 
-  filter(`Sensor Name` == "PER_AIRMON_MESH1762150")
-
-ggplot(per, aes(x = Timestamp, y = Value)) +
-  geom_line() + 
-  geom_point()
 
 # OSM data ----------------------------------------------------------------
 
@@ -38,8 +16,8 @@ ggplot(per, aes(x = Timestamp, y = Value)) +
 
 osm = readRDS("data/osm_drive_2023-01-17.Rds")
 
+# Join OSM with plates in
 traffic_osm = st_join(traffic, osm)
-
 nearest = st_nearest_feature(traffic, osm)
 nn = osm[nearest,] %>% 
   st_drop_geometry()
@@ -47,11 +25,41 @@ traffic_osm = bind_cols(traffic, nn)
 
 tm_shape(traffic_osm) + tm_dots("lanes")
 
+# Join OSM with PM10
+pm10_osm = st_join(pm10, osm)
+nearest = st_nearest_feature(pm10, osm)
+np = osm[nearest,] %>% 
+  st_drop_geometry()
+pm10_osm = bind_cols(pm10, np)
+tm_shape(pm10_osm) + tm_dots("ref")
+
+# Checking extreme values -------------------------------------------------
+
+per = pm10_records %>% 
+  filter(`Sensor Name` == "PER_AIRMON_MESH1913150")
+
+ggplot(per, aes(x = Timestamp, y = Value)) +
+  geom_line() + 
+  geom_point()
+
+per = pm10_records %>% 
+  filter(`Sensor Name` == "PER_AIRMON_MESH1976150")
+
+ggplot(per, aes(x = Timestamp, y = Value)) +
+  geom_line() + 
+  geom_point()
+
+per = pm10_records %>% 
+  filter(`Sensor Name` == "PER_AIRMON_MESH1762150")
+
+ggplot(per, aes(x = Timestamp, y = Value)) +
+  geom_line() + 
+  geom_point()
+
+#############################
 
 per = traffic_osm %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_GHA167_DR3_DR2A")
-
-
 
 per = traffic_osm %>% 
   filter(`Sensor Name` == "PER_NE_CAJT_NTA1058_CR4_SR3")
@@ -77,12 +85,12 @@ northeast_lsoa = st_make_valid(northeast_lsoa)
 tm_shape(northeast_lsoa) + tm_polygons()
 
 # Count number of LSOAs/MSOAs that contain both sensor types
-join = st_join(northeast, pm10) %>% 
+join = st_join(northeast, pm10_osm) %>% 
   group_by(geo_code) %>% 
   summarise(mean_pm10 = mean(median_value)) %>% 
   filter(!is.na(mean_pm10))
 tm_shape(join) + tm_polygons("mean_pm10")
-join_traffic = st_join(join, traffic) %>% 
+join_traffic = st_join(join, traffic_osm) %>% 
   group_by(geo_code, mean_pm10) %>% 
   summarise(mean_traffic = mean(sum_plates)) %>% 
   filter(!is.na(mean_traffic))
@@ -103,12 +111,12 @@ summary(m1)$r.squared
 
 # only 14 LSOAs match both datasets
 
-join_lsoa = st_join(northeast_lsoa, pm10) %>%
+join_lsoa = st_join(northeast_lsoa, pm10_osm) %>%
   group_by(geo_code) %>%
   summarise(mean_pm10 = mean(median_value)) %>%
   filter(!is.na(mean_pm10))
 tm_shape(join_lsoa) + tm_polygons("mean_pm10")
-join_lsoa_traffic = st_join(join_lsoa, traffic) %>%
+join_lsoa_traffic = st_join(join_lsoa, traffic_osm) %>%
   group_by(geo_code, mean_pm10) %>%
   summarise(mean_traffic = mean(sum_plates)) %>%
   filter(!is.na(mean_traffic))
@@ -122,5 +130,8 @@ summary(m1)$r.squared
 # [1] 0.02452623
 
 # Get built-up area bounds or calculate population density
+
+
+# Sensors on same road ----------------------------------------------------
 
 
