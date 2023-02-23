@@ -39,6 +39,28 @@ plates_12 = plates_12 %>%
                          "PER_NE_CAJT_NCA189_BR3_SJB2", "PER_NE_CAJT_NCA189_SJB2_BR3"))
 half_season = bind_rows(plates_8, plates_9, plates_10, plates_11, plates_12)
 
+# Map
+sensor_day = half_season %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`, day) %>% 
+  summarise(
+    daily_plates = sum(Value),
+    count = n(),
+    max_plates = max(Value)
+  )
+hours = sensor_day %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(`Daily vehicles` = mean(daily_plates))
+
+sensor_locations = half_season %>% 
+  select(`Sensor Name`) %>% 
+  group_by(`Sensor Name`) %>% 
+  filter(row_number() == 1)
+sensor_stats = left_join(hours, sensor_locations, by = "Sensor Name")
+sensor_stats = st_as_sf(sensor_stats)
+st_crs(sensor_stats) = 4326
+tm_shape(sensor_stats) + tm_dots("Daily vehicles", size = 0.3)
+
 # All home match days 21-22 season
 match_days = half_season %>% 
   filter(day == "2021-08-07" | day == "2021-08-15" | day == "2021-08-25" | day == "2021-08-28" | day == "2021-09-17"
