@@ -45,7 +45,7 @@ match_days = half_season %>%
          | day == "2021-10-17" | day == "2021-10-30" | day == "2021-11-20" | day == "2021-11-30" | day == "2021-12-04"
          | day == "2021-12-19" | day == "2021-12-27")
 match_days = match_days %>% 
-  filter(day_of_week == "Sunday" | day_of_week == "Saturday")
+  filter(day_of_week == "Saturday")
 
 # Days without home matches
 other_days = half_season %>% 
@@ -53,7 +53,7 @@ other_days = half_season %>%
                   & day != "2021-10-17" & day != "2021-10-30" & day != "2021-11-20" & day != "2021-11-30" & day != "2021-12-04"
                   & day != "2021-12-19" & day != "2021-12-27")
 other_days = other_days %>% 
-  filter(day_of_week == "Sunday" | day_of_week == "Saturday")
+  filter(day_of_week == "Saturday")
 
 # Match day
 sensor_hour = match_days %>% 
@@ -96,10 +96,15 @@ hour_other = sensor_hour %>%
             hourly_plates = sum(hourly_plates)/days
   )
 
+# avoid ugly pixelated diagonal lines on R graphs in Windows
+library(Cairo)
+CairoWin()
+
 ggplot() +
-  geom_line(data = hour_other, aes(hour, hourly_plates), col = "black", lwd = 1) +
-  geom_line(data = hour_match, aes(hour, hourly_plates), col = "red", lwd = 1) +
-  labs(x = "Time", y = "Mean hourly vehicles")
+  geom_line(data = hour_other, aes(hour, hourly_plates), col = "black", linewidth = 1) +
+  geom_line(data = hour_match, aes(hour, hourly_plates), col = "red", linewidth = 1) +
+  labs(x = "Time", y = "Mean hourly vehicles") +
+  theme_minimal()
 
 
 

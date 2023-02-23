@@ -57,3 +57,10 @@ For the locality effect, we assessed correlations between sensors within the sam
 For road identity, we compared assigned sensors to their nearest road and assessed correlations between sensors on roads with the same reference (e.g. "A167").
 When assigning the sensors to roads, we did not allow the traffic sensors to be matched with residential, service or unclassified roads, as these appeared to be false matches.
 The air pollution sensors were allowed to be matched to residential roads, but not to service or unclassified roads.
+
+## Match-day travel
+
+We investigated travel associated with home football matches at St. James' Park stadium in Newcastle.
+During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off.
+We compared road traffic levels on these five match days to traffic on the other 14 Saturdays during August - December 2021.
+Using the four ANPR cameras closest to St. James' Park stadium (on St. James' Boulevard and Barrack Road), we can see that on match days, traffic is greater than usual immediately before and after the matches, but drops sharply at the 3pm kick-off.
