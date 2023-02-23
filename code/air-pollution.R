@@ -95,19 +95,27 @@ northeast_lsoa = get_pct_zones("north-east", geography = "lsoa")
 northeast_lsoa = st_make_valid(northeast_lsoa)
 tm_shape(northeast_lsoa) + tm_polygons()
 
+pop = read_csv("data/popn-2020.csv")
+pop = pop %>% 
+  rename(population = `All Ages`)
+msoa_pop = inner_join(northeast, pop, by = c("geo_code" = "MSOA Code"))
+msoa_pop = msoa_pop %>% 
+  mutate(area = st_area(msoa_pop),
+         pop_density = population/area)
+
 # Find MSOAs that contain both sensor types
-join = st_join(northeast, pm10_osm) %>% 
-  group_by(geo_code) %>% 
+join = st_join(msoa_pop, pm10_osm) %>% 
+  group_by(geo_code, population, area, pop_density) %>% 
   summarise(mean_pm10 = mean(median_value)) %>% 
   filter(!is.na(mean_pm10))
-tm_shape(join) + tm_polygons("mean_pm10")
+tm_shape(join) + tm_polygons("pop_density")
 join_traffic = st_join(join, traffic_osm) %>% 
-  group_by(geo_code, mean_pm10) %>% 
+  group_by(geo_code, mean_pm10, pop_density) %>% 
   summarise(mean_traffic = mean(sum_plates)) %>% 
   filter(!is.na(mean_traffic))
 tm_shape(join_traffic) + tm_polygons("mean_pm10") + 
   tm_shape(pm10) + tm_dots("median_value")
-tm_shape(join_traffic) + tm_polygons("mean_pm10", alpha = 0.5) +
+tm_shape(join_traffic) + tm_polygons("pop_density", alpha = 0.5) +
   tm_shape(traffic) + tm_dots("sum_plates", palette = "-magma") + 
   tm_shape(pm10) + tm_bubbles("median_value")
 
