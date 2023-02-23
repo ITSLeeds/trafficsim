@@ -60,7 +60,7 @@ sensor_hour = match_days %>%
   st_drop_geometry() %>% 
   group_by(`Sensor Name`, day, hour) %>% 
   summarise(
-    plates = sum(Value),
+    hourly_plates = sum(Value),
     count = n(),
     max_plates = max(Value)
   )
@@ -76,7 +76,7 @@ sensor_hour = match_days %>%
 hour_match = sensor_hour %>% 
   group_by(hour) %>% 
   summarise(days = length(unique(day)),
-    daily_plates = sum(plates)/days
+    hourly_plates = sum(hourly_plates)/days
     )
 
 
@@ -85,7 +85,7 @@ sensor_hour = other_days %>%
   st_drop_geometry() %>% 
   group_by(`Sensor Name`, day, hour) %>% 
   summarise(
-    plates = sum(Value),
+    hourly_plates = sum(Value),
     count = n(),
     max_plates = max(Value)
   )
@@ -93,13 +93,13 @@ sensor_hour = other_days %>%
 hour_other = sensor_hour %>% 
   group_by(hour) %>% 
   summarise(days = length(unique(day)),
-            daily_plates = sum(plates)/days
+            hourly_plates = sum(hourly_plates)/days
   )
 
-ggplot(hour_other, aes(hour, daily_plates)) +
-  geom_line(col = "black") +
-  ggplot(hour_match, aes(hour, daily_plates)) +
-  geom_line(col = "red")
+ggplot() +
+  geom_line(data = hour_other, aes(hour, hourly_plates), col = "black", lwd = 1) +
+  geom_line(data = hour_match, aes(hour, hourly_plates), col = "red", lwd = 1) +
+  labs(x = "Time", y = "Mean hourly vehicles")
 
 
 
