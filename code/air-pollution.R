@@ -1,11 +1,14 @@
 library(tidyverse)
 library(tmap)
 tmap_mode("view")
+library(sf)
 
 pm10 = readRDS("data/pm10_stats_2021_2.Rds")
 traffic = readRDS("data/plates_in_stats_2021_2.Rds")
 pm10_records = readRDS("data/pm10_2021_2.Rds")
 
+traffic = traffic %>% 
+  mutate(`Sum plates` = sum_plates)
 
 # OSM data ----------------------------------------------------------------
 
@@ -100,23 +103,23 @@ pop = pop %>%
   rename(population = `All Ages`)
 msoa_pop = inner_join(northeast, pop, by = c("geo_code" = "MSOA Code"))
 msoa_pop = msoa_pop %>% 
-  mutate(area = st_area(msoa_pop),
-         pop_density = population/area)
+  mutate(area = units::drop_units(st_area(msoa_pop)/1000000),
+         `Pop density` = population/area)
 
 # Find MSOAs that contain both sensor types
 join = st_join(msoa_pop, pm10_osm) %>% 
-  group_by(geo_code, population, area, pop_density) %>% 
+  group_by(geo_code, population, area, `Pop density`) %>% 
   summarise(mean_pm10 = mean(median_value)) %>% 
   filter(!is.na(mean_pm10))
 tm_shape(join) + tm_polygons("pop_density")
 join_traffic = st_join(join, traffic_osm) %>% 
-  group_by(geo_code, mean_pm10, pop_density) %>% 
+  group_by(geo_code, mean_pm10, `Pop density`) %>% 
   summarise(mean_traffic = mean(sum_plates)) %>% 
   filter(!is.na(mean_traffic))
 tm_shape(join_traffic) + tm_polygons("mean_pm10") + 
   tm_shape(pm10) + tm_dots("median_value")
-tm_shape(join_traffic) + tm_polygons("pop_density", alpha = 0.5) +
-  tm_shape(traffic) + tm_dots("sum_plates", palette = "-magma") + 
+tm_shape(join_traffic) + tm_polygons("Pop density", alpha = 0.5) +
+  tm_shape(traffic) + tm_dots("Sum plates", palette = "-magma") + 
   tm_shape(pm10) + tm_bubbles("median_value")
 
 ggplot(join_traffic, aes(mean_traffic, mean_pm10)) + 
@@ -124,7 +127,10 @@ ggplot(join_traffic, aes(mean_traffic, mean_pm10)) +
 m1 = lm(mean_pm10 ~ mean_traffic, data = join_traffic)
 summary(m1)$r.squared
 # [1] 0.05653983
-
+m2 = lm(mean_pm10 ~ mean_traffic + `Pop density`, data = join_traffic)
+summary(m2)$r.squared
+summary(m2)
+# [1] 0.05794636
 
 # Same with LSOAs ---------------------------------------------------------
 
