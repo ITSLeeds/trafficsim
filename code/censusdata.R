@@ -135,6 +135,15 @@ saveRDS(od_foot_jittered, "data/od_foot_jittered.Rds")
 saveRDS(od_bicycle_jittered, "data/od_bicycle_jittered.Rds")
 saveRDS(od_drive_jittered, "data/od_drive_jittered.Rds")
 
+# Figure 1
+od_jit = readRDS("data/od_drive_jittered.Rds")
+od_jit = od_jit %>% 
+  arrange(-all_vehs) %>% 
+  slice_head(n = 1000) %>% 
+  arrange(all_vehs) %>% 
+  rename(`Jittered trips` = all_vehs)
+tm_shape(od_jit) + tm_lines("Jittered trips")
+
 # Then do the routing in OTP using code/otp.R
 
 
@@ -455,6 +464,7 @@ map_net = car_rnet %>%
   arrange(all_vehs) # so the high flow routes are plotted on top
 tm_shape(map_net) + tm_lines("Commute route network", 
                              breaks = c(0, 500, 1000, 2000, 5000, 15000))
+# Figure 2
 tm_shape(map_net) + 
   tm_lines("Commute route network", 
            breaks = c(0, 500, 1000, 2000, 5000, 15000), lwd = 1.3) + 
@@ -501,6 +511,7 @@ summary(m1)$r.squared
 # [1] 0.2714064 # plates in mean
 # [1] 0.2716468 # plates in sum
 
+# Figure 3
 ggplot(rnet_joined, aes(all_vehs, sum_plates/28)) + 
   geom_point() + 
   labs(y = "ANPR daily mean vehicles Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commutes") +
