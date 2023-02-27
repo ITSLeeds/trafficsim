@@ -446,17 +446,19 @@ per3_daily = per3 %>%
 foot_rnet = readRDS("data/foot_rnet_jittered.Rds")
 bicycle_rnet = readRDS("data/bicycle_rnet_jittered.Rds")
 car_rnet = readRDS("data/drive_rnet_jittered.Rds")
+in_sum = readRDS("data/plates_in_stats_2021_2.Rds")
 
 inn = in_sum %>% 
-  mutate(`Mean daily plates in` = cars/28)
+  mutate(`Mean daily plates in` = sum_plates/28)
 map_net = car_rnet %>% 
-  mutate(`Commute route network` = all_vehs)
+  mutate(`Commute route network` = all_vehs) %>% 
+  arrange(all_vehs) # so the high flow routes are plotted on top
 tm_shape(map_net) + tm_lines("Commute route network", 
                              breaks = c(0, 500, 1000, 2000, 5000, 15000))
 tm_shape(map_net) + 
   tm_lines("Commute route network", 
-           breaks = c(0, 500, 1000, 2000, 5000, 15000)) + 
-  tm_shape(inn) + tm_dots("Mean daily plates in", size = 0.08)
+           breaks = c(0, 500, 1000, 2000, 5000, 15000), lwd = 1.3) + 
+  tm_shape(inn) + tm_dots("Mean daily plates in", size = 0.08, palette = "-magma")
 
 tm_shape(car_2013_sum) + tm_dots() +
   tm_shape(car_rnet) + tm_lines("all_vehs")
@@ -480,6 +482,7 @@ tm_shape(car_2013_sum) + tm_dots() +
 
 # Plates In
 # Should find a way of removing residential/unclassified/service roads, these will be false matches
+
 rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
@@ -488,6 +491,7 @@ tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
   tm_shape(in_sum) + tm_dots("sum_plates")
 
 m1 = lm(sum_plates ~ all_vehs, data = rnet_joined)
+summary(m1)
 summary(m1)$r.squared
 # Feb:
 # [1] 0.326276 # plates in sum uncorrected
@@ -497,9 +501,10 @@ summary(m1)$r.squared
 # [1] 0.2714064 # plates in mean
 # [1] 0.2716468 # plates in sum
 
-ggplot(rnet_joined, aes(all_vehs, cars/28)) + 
+ggplot(rnet_joined, aes(all_vehs, sum_plates/28)) + 
   geom_point() + 
-  labs(y = "'Plates In' daily mean Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commute trips") +
+  labs(y = "ANPR daily mean vehicles Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commutes") +
+  geom_smooth(method = "lm", se = FALSE, lty = "dashed") +
   expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
 
 
