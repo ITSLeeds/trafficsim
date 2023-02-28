@@ -51,8 +51,37 @@ tm_shape(pm10_osm) + tm_dots("highway")
 # Get median daily traffic for the month ----------------------------------
 
 # Sum traffic each day
-
+traffic_detailed = readRDS("data/plates_in_2021_2.Rds")
+  
+traffic_daily = traffic_detailed %>% 
+  st_drop_geometry() %>% 
+  group_by(`Sensor Name`, day) %>% 
+  summarise(
+    daily_plates = sum(Value),
+    count = n(),
+    max_plates = max(Value)
+  )
+# Exclude time periods with less than 10 readings 
+# or with a reading greater than 6 standard deviations higher than the mean reading
+# time_corrected = time_group %>% 
+#   filter(
+#     ! max_plates > (mean_reading + 6 * sd_reading),
+#     ! count < 10
+#   )
 # Median of these daily sums
+monthly_median = traffic_daily %>% 
+  group_by(`Sensor Name`) %>% 
+  summarise(median_traffic = median(daily_plates))
+
+sensor_locations = traffic_detailed %>% 
+  select(`Sensor Name`) %>% 
+  group_by(`Sensor Name`) %>% 
+  filter(row_number() == 1)
+traffic_median = left_join(monthly_median, sensor_locations, by = "Sensor Name")
+traffic_median = st_as_sf(traffic_median)
+st_crs(traffic_median) = 4326
+
+
 
 # Checking extreme values -------------------------------------------------
 
@@ -126,23 +155,23 @@ summary(m1)$r.squared
 ggplot(join, aes(mean_pm10, `Pop density`)) + 
   geom_point()
 
-join_traffic = st_join(join, traffic_osm) %>% 
+join_traffic = st_join(join, traffic_median) %>% 
   group_by(geo_code, mean_pm10, `Pop density`) %>% 
-  summarise(mean_traffic = mean(sum_plates)) %>% 
+  summarise(mean_traffic = mean(median_traffic)) %>% 
   filter(!is.na(mean_traffic))
 tm_shape(join_traffic) + tm_polygons("mean_pm10") + 
   tm_shape(pm10) + tm_dots("median_value")
 
 # Figure 5
 tm_shape(join_traffic) + tm_polygons("Pop density", alpha = 0.5) +
-  tm_shape(traffic) + tm_dots("Sum plates", palette = "-magma") + 
+  tm_shape(traffic_median) + tm_dots("median_traffic", palette = "-magma") + 
   tm_shape(pm10) + tm_bubbles("median_value")
 
 ggplot(join_traffic, aes(mean_traffic, mean_pm10)) + 
   geom_point()
 m1 = lm(mean_pm10 ~ mean_traffic, data = join_traffic)
 summary(m1)$r.squared
-# [1] 0.05653983
+# [1] 0.05554601
 m2 = lm(mean_pm10 ~ mean_traffic + `Pop density`, data = join_traffic)
 summary(m2)$r.squared
 summary(m2)
