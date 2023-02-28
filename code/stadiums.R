@@ -59,6 +59,7 @@ sensor_locations = half_season %>%
 sensor_stats = left_join(hours, sensor_locations, by = "Sensor Name")
 sensor_stats = st_as_sf(sensor_stats)
 st_crs(sensor_stats) = 4326
+# Figure 6
 tm_shape(sensor_stats) + tm_dots("Daily vehicles", size = 0.3)
 
 # All home match days 21-22 season
@@ -118,6 +119,15 @@ hour_other = sensor_hour %>%
             hourly_plates = sum(hourly_plates)/days
   )
 
+# library(chron)
+# hours(hour_other$hour)
+# 
+# hour_other = hour_other %>% 
+#   mutate(hour = paste0(hour, ":00"))
+# hour_match = hour_match %>% 
+#   mutate(hour = paste0(hour, ":00"))
+
+# Figure 7
 # avoid ugly pixelated diagonal lines on R graphs in Windows
 library(Cairo)
 CairoWin()
