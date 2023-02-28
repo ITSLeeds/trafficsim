@@ -48,14 +48,21 @@ np = osm_nounc[nearest,] %>%
 pm10_osm = bind_cols(pm10, np)
 tm_shape(pm10_osm) + tm_dots("highway")
 
+# Get median daily traffic for the month ----------------------------------
+
+# Sum traffic each day
+
+# Median of these daily sums
+
 # Checking extreme values -------------------------------------------------
 
+# Figure 4
 per = pm10_records %>% 
   filter(`Sensor Name` == "PER_AIRMON_MESH1913150")
 
 ggplot(per, aes(x = Timestamp, y = Value)) +
   geom_line() + 
-  geom_point()
+  labs(y = "PM10", x = "")
 
 per = pm10_records %>% 
   filter(`Sensor Name` == "PER_AIRMON_MESH1976150")
@@ -67,9 +74,10 @@ ggplot(per, aes(x = Timestamp, y = Value)) +
 per = pm10_records %>% 
   filter(`Sensor Name` == "PER_AIRMON_MESH1762150")
 
+# Figure 4
 ggplot(per, aes(x = Timestamp, y = Value)) +
   geom_line() + 
-  geom_point()
+  labs(y = "PM10", x = "")
 
 #############################
 
@@ -112,12 +120,20 @@ join = st_join(msoa_pop, pm10_osm) %>%
   summarise(mean_pm10 = mean(median_value)) %>% 
   filter(!is.na(mean_pm10))
 tm_shape(join) + tm_polygons("pop_density")
+
+m1 = lm(mean_pm10 ~ `Pop density`, data = join)
+summary(m1)$r.squared
+ggplot(join, aes(mean_pm10, `Pop density`)) + 
+  geom_point()
+
 join_traffic = st_join(join, traffic_osm) %>% 
   group_by(geo_code, mean_pm10, `Pop density`) %>% 
   summarise(mean_traffic = mean(sum_plates)) %>% 
   filter(!is.na(mean_traffic))
 tm_shape(join_traffic) + tm_polygons("mean_pm10") + 
   tm_shape(pm10) + tm_dots("median_value")
+
+# Figure 5
 tm_shape(join_traffic) + tm_polygons("Pop density", alpha = 0.5) +
   tm_shape(traffic) + tm_dots("Sum plates", palette = "-magma") + 
   tm_shape(pm10) + tm_bubbles("median_value")
