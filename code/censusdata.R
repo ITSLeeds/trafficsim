@@ -147,3 +147,14 @@ ggplot(rnet_joined, aes(all_vehs, sum_plates/days_in_period)) +
   expand_limits(y = 0, x = c(0, 12500)) # watch - done because 12000 label was going outside the graph area
 
 
+# Map Fig 3 residuals -----------------------------------------------------
+
+rnet_resid = rnet_joined %>% 
+  mutate(residuals = residuals(m1),
+         residuals = as.numeric(residuals))
+
+tm_shape(rnet_resid) + 
+  tm_lines("all_vehs", lwd = 3) + 
+  tm_dots("residuals", size = 0.08, 
+          # breaks = c(-300000, -150000, 0, 150000, 300000),
+          palette = "RdYlGn")
