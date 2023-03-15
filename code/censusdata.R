@@ -98,9 +98,11 @@ saveRDS(car_rnet, "data/drive_rnet_jittered.Rds")
 
 car_rnet = readRDS("data/drive_rnet_jittered.Rds")
 in_sum = readRDS("data/plates_in_stats_2021_2.Rds")
+period = readRDS("data/plates_in_2021_2.Rds")
+days_in_period = length(unique(period$day))
 
 inn = in_sum %>% 
-  mutate(`Mean daily plates in` = sum_plates/28)
+  mutate(`Mean daily plates in` = sum_plates/days_in_period)
 map_net = car_rnet %>% 
   mutate(`Commute route network` = all_vehs) %>% 
   arrange(all_vehs) # so the high flow routes are plotted on top
@@ -122,8 +124,8 @@ rnet_refs = st_nearest_feature(x = in_sum, y = car_rnet)
 rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
 
-tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
-  tm_shape(in_sum) + tm_dots("sum_plates")
+# tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
+#   tm_shape(in_sum) + tm_dots("sum_plates")
 
 m1 = lm(sum_plates ~ all_vehs, data = rnet_joined)
 summary(m1)
@@ -137,7 +139,7 @@ summary(m1)$r.squared
 # [1] 0.2716468 # plates in sum
 
 # Figure 3
-ggplot(rnet_joined, aes(all_vehs, sum_plates/28)) + 
+ggplot(rnet_joined, aes(all_vehs, sum_plates/days_in_period)) + 
   geom_point() + 
   labs(y = "ANPR daily mean vehicles Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commutes") +
   geom_smooth(method = "lm", se = FALSE, lty = "dashed") +
