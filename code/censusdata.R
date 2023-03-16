@@ -98,9 +98,11 @@ saveRDS(car_rnet, "data/drive_rnet_jittered.Rds")
 
 car_rnet = readRDS("data/drive_rnet_jittered.Rds")
 in_sum = readRDS("data/plates_in_stats_2021_2.Rds")
+
 period = readRDS("data/plates_in_2021_2.Rds")
 days_in_period = length(unique(period$day))
 
+# For Figure 2
 inn = in_sum %>% 
   mutate(`Mean daily plates in` = sum_plates/days_in_period)
 map_net = car_rnet %>% 
