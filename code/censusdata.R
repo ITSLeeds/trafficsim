@@ -174,3 +174,4 @@ tm_shape(rnet_resid) +
 
 summary(rnet_resid)
 
+# Check residuals by road type
