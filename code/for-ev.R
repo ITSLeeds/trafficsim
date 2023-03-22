@@ -58,3 +58,15 @@ st_crs(sensor_periods) = 4326
 # tm_shape(sensor_periods) + tm_dots("mean_plates")
 saveRDS(sensor_periods, "data/sensor_periods_2021_2.Rds")
 write_csv(sensor_periods, "data/sensor_periods_2021_2.csv")
+
+# EV locations ------------------------------------------------------------
+
+# Why are these locations so strange?
+ev_locations = read_csv("data/ev net.csv", col_names = FALSE)
+ev_locations = ev_locations %>% 
+  rename(id = X1,
+         longitude = X2,
+         latitude = X3)
+ev_locations = ev_locations %>% 
+  sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+tm_shape(ev_locations) + tm_dots()

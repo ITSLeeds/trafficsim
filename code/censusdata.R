@@ -162,3 +162,13 @@ tm_shape(rnet_resid) +
   tm_dots("residuals", size = 0.08, 
           breaks = c(-300000, -150000, -50000, 0, 50000, 150000, 300000),
           palette = "RdYlGn")
+
+# Fitted map - divide sum_plates by days in period to get more sensible fitted values
+tm_shape(rnet_resid) + 
+  tm_lines("all_vehs", lwd = 3) + 
+  tm_dots("fitted", size = 0.08, 
+          # breaks = c(-300000, -150000, -50000, 0, 50000, 150000, 300000),
+          palette = "RdYlGn")
+
+summary(rnet_resid)
+
