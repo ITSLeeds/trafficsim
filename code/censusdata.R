@@ -101,10 +101,12 @@ in_sum = readRDS("data/plates_in_stats_2021_2.Rds")
 
 period = readRDS("data/plates_in_2021_2.Rds")
 days_in_period = length(unique(period$day))
+in_sum = in_sum %>% 
+  mutate(daily_plates = sum_plates / days_in_period)
 
 # For Figure 2
 inn = in_sum %>% 
-  mutate(`Mean daily plates in` = sum_plates/days_in_period)
+  mutate(`Mean daily plates in` = daily_plates)
 map_net = car_rnet %>% 
   mutate(`Commute route network` = all_vehs) %>% 
   arrange(all_vehs) # so the high flow routes are plotted on top
@@ -127,9 +129,9 @@ rnet_feats = car_rnet[rnet_refs, ]
 rnet_joined = cbind(rnet_feats, in_sum)
 
 # tm_shape(rnet_feats) + tm_lines("all_vehs", lwd = 3) +
-#   tm_shape(in_sum) + tm_dots("sum_plates")
+#   tm_shape(in_sum) + tm_dots("daily_plates")
 
-m1 = lm(sum_plates ~ all_vehs, data = rnet_joined)
+m1 = lm(daily_plates ~ all_vehs, data = rnet_joined)
 summary(m1)
 summary(m1)$r.squared
 # Feb:
@@ -142,7 +144,7 @@ summary(m1)$r.squared
 # [1] 0.2716468 # plates in sum
 
 # Figure 3
-ggplot(rnet_joined, aes(all_vehs, sum_plates/days_in_period)) + 
+ggplot(rnet_joined, aes(all_vehs, daily_plates)) + 
   geom_point() + 
   labs(y = "ANPR daily mean vehicles Feb 2021", x = "2011 Census car driver/taxi/motorbike/other commutes") +
   geom_smooth(method = "lm", se = FALSE, lty = "dashed") +
@@ -160,15 +162,15 @@ rnet_resid = rnet_joined %>%
 tm_shape(rnet_resid) + 
   tm_lines("all_vehs", lwd = 3) + 
   tm_dots("residuals", size = 0.08, 
-          breaks = c(-300000, -150000, -50000, 0, 50000, 150000, 300000),
+          breaks = c(-10000, -5000, -2000, 0, 2000, 5000, 10000),
           palette = "RdYlGn")
 
-# Fitted map - divide sum_plates by days in period to get more sensible fitted values
+# Fitted values map 
 tm_shape(rnet_resid) + 
   tm_lines("all_vehs", lwd = 3) + 
   tm_dots("fitted", size = 0.08, 
-          # breaks = c(-300000, -150000, -50000, 0, 50000, 150000, 300000),
-          palette = "RdYlGn")
+          breaks = c(0, 4000, 6000, 10000, 15000),
+          palette = "viridis")
 
 summary(rnet_resid)
 

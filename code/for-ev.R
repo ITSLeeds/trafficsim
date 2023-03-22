@@ -1,3 +1,7 @@
+library(tidyverse)
+library(tmap)
+tmap_mode("view")
+
 plates_in_2021 = readRDS("data/plates_in_2021_2.Rds")
 
 in_sd_mean = plates_in_2021 %>%
