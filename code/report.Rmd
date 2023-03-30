@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## Introduction
@@ -42,10 +42,22 @@ Parameters such as dataset name, time period desired, and the base URL, can be a
 
 ## Results
 
+### Traffic flows using ANPR cameras
+
 We have seen that there is a relatively strong correlation between the traffic flows according to the UO sensor data and commute trips from the 2011 Census.
 This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
 
-## Traffic flow and air pollution
+Figure @ref/(fig:resid) shows the model residuals.
+Negative residuals mean the ANPR vehicle counts are lower than the fitted value from the model with the Census rnet, while positive residuals mean the ANPR counts are higher than the fitted value.
+The greatest residuals are often related to dual carriageways where the route network shows much greater traffic flows in one direction than the other.
+This is due to the way in which the route network was contructed, in which flows are assumed to be in one direction only.
+To improve accuracy, the route network should be amended to equalise bidirectional flows.
+
+```{r resid, fig.cap="Residuals from a linear model of vehicle numbers from the ANPR plates data as a function of the vehicle numbers from the 2011 Census commute route network. Circles show residuals"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228830570-b7f3cfd7-5a6d-4e0a-a48a-f9853966bfba.jpg")
+```
+
+### Traffic flow and air pollution
 
 The PM10 values at some sensors are subject to extreme spikes, which appear to be related to particular events. 
 Figure 1 shows the height of these spikes at two Newcastle sensors, alongside a more regular pattern of PM10 levels at a city centre sensor.
@@ -58,7 +70,7 @@ For road identity, we compared assigned sensors to their nearest road and assess
 When assigning the sensors to roads, we did not allow the traffic sensors to be matched with residential, service or unclassified roads, as these appeared to be false matches.
 The air pollution sensors were allowed to be matched to residential roads, but not to service or unclassified roads.
 
-## Match-day travel
+### Match-day travel
 
 We investigated travel associated with home football matches at St. James' Park stadium in Newcastle.
 During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off.

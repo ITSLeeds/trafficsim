@@ -157,8 +157,11 @@ rnet_resid = rnet_joined %>%
   mutate(residuals = residuals(m1),
          fitted = fitted.values(m1))
 
-# Negative residuals mean the ANPR counts are lower than the fitted value from the model with the Census rnet, positive residuals mean the ANPR counts are higher than the fitted value
-# The greatest residuals are often related to dual carriageways where the rnet has much greater traffic flows in one direction than the other
+# Negative residuals mean the ANPR counts are lower than the fitted value from the model with the Census rnet, 
+# positive residuals mean the ANPR counts are higher than the fitted value
+
+# The greatest residuals are often related to dual carriageways where the rnet has 
+# much greater traffic flows in one direction than the other
 tm_shape(rnet_resid) + 
   tm_lines("all_vehs", lwd = 3) + 
   tm_dots("residuals", size = 0.08, 
