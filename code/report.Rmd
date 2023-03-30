@@ -48,12 +48,12 @@ We have seen that there is a relatively strong correlation between the traffic f
 This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
 
 Figure @ref/(fig:resid) shows the model residuals.
-Negative residuals mean the ANPR vehicle counts are lower than the fitted value from the model with the Census rnet, while positive residuals mean the ANPR counts are higher than the fitted value.
+Negative residuals reveal that the mean daily ANPR vehicle counts are lower than the fitted value from the model with the Census rnet, while positive residuals mean the ANPR counts are higher than the fitted value.
 The greatest residuals are often related to dual carriageways where the route network shows much greater traffic flows in one direction than the other.
 This is due to the way in which the route network was contructed, in which flows are assumed to be in one direction only.
 To improve accuracy, the route network should be amended to equalise bidirectional flows.
 
-```{r resid, fig.cap="Residuals from a linear model of vehicle numbers from the ANPR plates data as a function of the vehicle numbers from the 2011 Census commute route network. Circles show residuals"}
+```{r resid, fig.cap="Residuals from a linear model of vehicle numbers from the ANPR plates data as a function of the vehicle numbers from the 2011 Census commute route network. Circles show residuals relating to mean daily vehicle numbers in February 2021"}
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228835442-a6b72b77-2b32-4d9b-9937-af135a33d301.jpg")
 ```
 

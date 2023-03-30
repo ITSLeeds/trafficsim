@@ -178,3 +178,4 @@ tm_shape(rnet_resid) +
 summary(rnet_resid)
 
 # Check residuals by road type
+# but car_rnet doesn't include road type, will need to join to OSM data
