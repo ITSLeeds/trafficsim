@@ -64,3 +64,36 @@ We investigated travel associated with home football matches at St. James' Park 
 During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off.
 We compared road traffic levels on these five match days to traffic on the other 14 Saturdays during August - December 2021.
 Using the four ANPR cameras closest to St. James' Park stadium (on St. James' Boulevard and Barrack Road), we can see that on match days, traffic is greater than usual immediately before and after the matches, but drops sharply at the 3pm kick-off.
+
+## How to improve Urban Observatory data usability
+
+### General issues
+
+It would be useful to make available metadata relating to following issues:
+
+- dates when sensor is partially or fully operational
+- standard frequency of readings
+- name of data provider (e.g. www.nettraveldata.co.uk)
+- when there are gaps in readings, does the first post-gap reading cumulatively make up for the time missed?
+- confidence intervals of sensor readings
+
+### Issues specific to traffic sensors
+
+The location data provided was sufficient to identify the road on which the sensors were located in almost all cases, however there were often uncertainties regarding which traffic lanes the cameras were showing.
+A camera might cover all lanes in a given direction, or just one of them.
+
+There were also uncertainties related to the way in which the ANPR camera locations were paired together to form sensor IDs. 
+Each sensor ID related to a pair of camera locations, and it was possible for camera locations to be shared between multiple sensor pairs; for example the first camera location of one sensor pair could also be the first camera location of a different sensor pair.
+Yet in these cases, the traffic data was liable to differ between the two sensor IDs, with no clear reason why these differences existed. 
+They may perhaps be due to different sensor IDs representing different traffic lanes at the same location.
+
+Finally, it is known that ANPR cameras do not capture every single passing vehicle, due to factors such as weather conditions, vehicle speed and dirt covering license plates.
+It be helpful to know what proportion of plates are being recorded and the level of confidence in this. 
+This is an example of the 'confidence interval' issue listed in the previous subsection.
+
+To provide clearer guidance on these factors relating to the ANPR cameras and other road-based sensors, the following metadata could prove helpful:
+
+- more specific location data including road name and reference number (e.g. A1)
+- whether cameras cover the whole road or just one or more lanes, and whether this is in one direction or both directions
+- when multiple sensor IDs appear to cover the same location, how are they differentiated? (e.g. does each sensor represent a different lane of traffic?)
+- what proportion of plates are being recorded and what is the level of confidence in this?
