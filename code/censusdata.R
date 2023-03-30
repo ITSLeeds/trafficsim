@@ -154,7 +154,7 @@ ggplot(rnet_joined, aes(all_vehs, daily_plates)) +
 # Map Fig 3 residuals -----------------------------------------------------
 
 rnet_resid = rnet_joined %>% 
-  mutate(residuals = residuals(m1),
+  mutate(Residuals = residuals(m1),
          fitted = fitted.values(m1))
 
 # Negative residuals mean the ANPR counts are lower than the fitted value from the model with the Census rnet, 
@@ -163,8 +163,8 @@ rnet_resid = rnet_joined %>%
 # The greatest residuals are often related to dual carriageways where the rnet has 
 # much greater traffic flows in one direction than the other
 tm_shape(rnet_resid) + 
-  tm_lines("all_vehs", lwd = 3) + 
-  tm_dots("residuals", size = 0.08, 
+  # tm_lines("all_vehs", lwd = 3) + 
+  tm_dots("Residuals", size = 0.08, 
           breaks = c(-10000, -5000, -2000, 0, 2000, 5000, 10000),
           palette = "RdYlGn")
 

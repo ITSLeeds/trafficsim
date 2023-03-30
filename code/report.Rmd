@@ -54,7 +54,7 @@ This is due to the way in which the route network was contructed, in which flows
 To improve accuracy, the route network should be amended to equalise bidirectional flows.
 
 ```{r resid, fig.cap="Residuals from a linear model of vehicle numbers from the ANPR plates data as a function of the vehicle numbers from the 2011 Census commute route network. Circles show residuals"}
-knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228830570-b7f3cfd7-5a6d-4e0a-a48a-f9853966bfba.jpg")
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228835442-a6b72b77-2b32-4d9b-9937-af135a33d301.jpg")
 ```
 
 ### Traffic flow and air pollution
