@@ -120,9 +120,19 @@ knitr::include_graphics("https://user-images.githubusercontent.com/52210872/2300
 ### Match-day travel
 
 We investigated travel associated with home football matches at St. James' Park stadium in Newcastle.
-During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off.
+During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off (the kick-off time for the final match is unknown but within an hour of 3pm).
 We compared road traffic levels on these five match days to traffic on the other 14 Saturdays during August - December 2021.
-Using the four ANPR cameras closest to St. James' Park stadium (on St. James' Boulevard and Barrack Road), we can see that on match days, traffic is greater than usual immediately before and after the matches, but drops sharply at the 3pm kick-off.
+There are ANPR cameras facing in both directions on both St James' Boulevard and Barrack Road (Figure /@ref(fig:map)); between them these four cameras will cover most routes to and from the stadium.
+
+```{r map, fig.cap="Location and main daily vehicle flows for the four camera locations closest to St James' Park stadium, Aug-Dec 2021"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230081705-1bb8ffd4-5d85-40fa-b8b9-85b7fae571c0.png")
+```
+
+Using the four ANPR cameras closest to St. James' Park stadium, we can see that on match days, traffic is greater than usual immediately before and after the matches, but drops sharply at the 3pm kick-off (Figure /@ref(fig:matchday)).
+
+```{r matchday, fig.cap="Mean hourly traffic on match Saturdays (red) and non-match Saturdays (black), at the four camera locations closest to the St. James' Park stadium, Aug-Dec 2021"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230081729-700abd24-b36e-460c-9d80-c1286529f2e9.png")
+```
 
 ## How to improve Urban Observatory data usability
 
