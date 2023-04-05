@@ -18,7 +18,7 @@ We have focused mainly on traffic data.
 Much analysis of traffic flow is based on 2011 Census data.
 This provides the most comprehensive survey of commute trips, including origins and destinations with high geographic resolution, but it is now over ten years out of date.
 
-### Benefits of using UO data
+### Benefits of using Urban Observatory data
 
 Automatic number plate recognition (ANPR) cameras provide vehicle flow data on a real-time basis, typically sending readings every 5 minutes.
 This allows us to account for long-term changes in traffic flows, such as changes related to the construction of new housing developments over the last decade, as well as short-term changes linked to events or periodic patterns.
@@ -59,23 +59,26 @@ For other data, we only included sensor readings from days on which at least hal
 Sometimes the ANPR cameras don't send any readings for a few hours, then after that they send a single reading that contains the sum of all the vehicle plates recorded over the previous hours. 
 To avoid problems related to this in time-sensitive analyses, we excluded time periods containing less than 10 readings (typically the cameras send readings every 5 minutes), and periods containing a single reading that is greater than 6 standard deviations higher than the mean reading for the given sensor.
 
-## Results
-
-Despite the ten-year time gap and the differences in travel purposes, we found a significant positive correlation between estimated vehicle flows according to the 2011 Census-based route network and the ANPR sensors. 
-The R-squared was 0.3 (Figure \@ref(fig:3))
-
 ### Wider applicability
 
 We have created an R function to download UO datasets. 
 This function can be applied to any other datasets that are stored in similar fashion.
 Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
 
+## Results
+
 ### Traffic flows using ANPR cameras
 
-We have seen that there is a relatively strong correlation between the traffic flows according to the UO sensor data and commute trips from the 2011 Census.
+There is a significant positive correlation between the traffic flows according to the UO sensor data and traffic flows in the route network derived from commute trips from the 2011 Census.
 This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
+The R-squared was 0.3 (Figure \@ref(fig:graph)).
 
-Figure @ref/(fig:resid) shows the model residuals.
+```{r graph, fig.cap="Mean daily vehicles according to the Census-based route network and the ANPR sensors, with trend line"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068837-77c8a6de-d0a4-413a-bb4d-bc3c7f4cfaf2.png")
+```
+
+
+The model residuals are shown in Figure @ref/(fig:resid).
 Negative residuals reveal that the mean daily ANPR vehicle counts are lower than the fitted value from the model with the Census rnet, while positive residuals mean the ANPR counts are higher than the fitted value.
 The greatest residuals are often related to dual carriageways where the route network shows much greater traffic flows in one direction than the other.
 This is due to the way in which the route network was contructed, in which flows are assumed to be in one direction only.
@@ -88,9 +91,14 @@ knitr::include_graphics("https://user-images.githubusercontent.com/52210872/2288
 ### Traffic flow and air pollution
 
 The PM10 values at some sensors are subject to extreme spikes, which appear to be related to particular events. 
-Figure 1 shows the height of these spikes at two Newcastle sensors, alongside a more regular pattern of PM10 levels at a city centre sensor.
+Figure /@ref(fig:outliers) shows the height of these spikes at a suburban Newcastle sensor, alongside a more regular pattern of PM10 levels at a city centre sensor.
 We are not aware of the nature of these events that caused these spikes, but they do not appear to be relevant for comparing air pollution to typical traffic flows.
 Therefore we assess PM10 levels using the median value at each sensor to minimise the impact of these spikes.
+
+```{r outliers, fig.cap="PM10 concentrations in February 2021 at a sensor in a suburban location (left) and at a sensor in Newcastle city centre (right)"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068893-ac205617-d998-49ee-a5e2-1812ded92f50.png")
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068932-305a46a9-2d79-4ad2-b429-f60ac1247e25.png")
+```
 
 We investigated whether traffic volumes could best predict PM10 particulate air pollution on the basis of locality or road identity. 
 For the locality effect, we assessed correlations between sensors within the same MSOA.
