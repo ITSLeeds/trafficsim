@@ -9,17 +9,42 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Introduction
 
-The EDIF project aims to identify use cases for Urban Observatory data....
+The EDIF project aims to identify use cases for Urban Observatory data.
+This allows us to identify ways in which the data architecture can be improved.
+We have focused mainly on traffic data.
 
 ### Limitations of existing traffic flow modelling
 
-We have 
+Much analysis of traffic flow is based on 2011 Census data.
+This provides the most comprehensive survey of commute trips, including origins and destinations with high geographic resolution, but it is now over ten years out of date.
 
 ### Benefits of using UO data
 
-ANPR cameras provide number plate
+Automatic number plate recognition (ANPR) cameras provide vehicle flow data on a real-time basis, typically sending readings every 5 minutes.
+This allows us to account for long-term changes in traffic flows, such as changes related to the construction of new housing developments over the last decade, as well as short-term changes linked to events or periodic patterns.
+These cameras can also capture all trip types, rather than just commuting.
 
 ## Methods
+
+The 2011 Census commuting data was collated at MSOA level.
+We then used a 'jittering' process to disaggregate motor vehicle flows between MSOAs using randomly selected origin and destination points on local road networks (Figure \@ref(fig:jitter)). 
+The resulting desire lines were routed onto the road network using OpenTripPlanner, and these routes were then converted into a route network. 
+
+```{r jitter, fig.cap="The top 1000 jittered desire lines for 2011 Census commute trips that start and/or end in Tyne and Wear"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068714-f5ccb2dd-c636-4675-882b-b55383ed4f75.png")
+```
+
+For the Urban Observatory sensors, we used data from 222 ANPR cameras across Tyne and Wear dating from February 2021, stored at https://archive.dev.urbanobservatory.ac.uk/. 
+These record all vehicles with visible number plates.
+Each sensor ID represents a pair of camera locations.
+The dataset that we used is labelled "Plates In", and it records the number of vehicles passing the first of the two locations in the sensor ID pair.
+
+We assigned the camera locations to roads using Open Street Map road data, and conducted a series of data cleaning steps as described below. 
+It was thus possible to compare the mean daily vehicle flow at each camera location with the vehicle flow at the same location according to the 2011 Census-based commute route network (Figure /@ref(fig:rnet)).
+
+```{r rnet, fig.cap="Daily vehicle flows on the 2011 Census-based commute route network and at ANPR camera locations in Feburary 2021"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068795-6dcb82fb-e919-4eae-8433-799e33114382.png")
+```
 
 ### Data quality
 
@@ -34,13 +59,16 @@ For other data, we only included sensor readings from days on which at least hal
 Sometimes the ANPR cameras don't send any readings for a few hours, then after that they send a single reading that contains the sum of all the vehicle plates recorded over the previous hours. 
 To avoid problems related to this in time-sensitive analyses, we excluded time periods containing less than 10 readings (typically the cameras send readings every 5 minutes), and periods containing a single reading that is greater than 6 standard deviations higher than the mean reading for the given sensor.
 
+## Results
+
+Despite the ten-year time gap and the differences in travel purposes, we found a significant positive correlation between estimated vehicle flows according to the 2011 Census-based route network and the ANPR sensors. 
+The R-squared was 0.3 (Figure \@ref(fig:3))
+
 ### Wider applicability
 
 We have created an R function to download UO datasets. 
 This function can be applied to any other datasets that are stored in similar fashion.
 Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
-
-## Results
 
 ### Traffic flows using ANPR cameras
 
