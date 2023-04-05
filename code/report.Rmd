@@ -90,21 +90,32 @@ knitr::include_graphics("https://user-images.githubusercontent.com/52210872/2288
 
 ### Traffic flow and air pollution
 
+To conduct an analysis comparing two UO sensor types, we investigated relations between vehicle flows and concentrations of PM10 particulate air pollution.
+
 The PM10 values at some sensors are subject to extreme spikes, which appear to be related to particular events. 
 Figure /@ref(fig:outliers) shows the height of these spikes at a suburban Newcastle sensor, alongside a more regular pattern of PM10 levels at a city centre sensor.
 We are not aware of the nature of these events that caused these spikes, but they do not appear to be relevant for comparing air pollution to typical traffic flows.
-Therefore we assess PM10 levels using the median value at each sensor to minimise the impact of these spikes.
+Therefore we assessed PM10 levels using the median value at each sensor to minimise the impact of these spikes, and compared these to median daily traffic volume in February 2021.
 
 ```{r outliers, fig.cap="PM10 concentrations in February 2021 at a sensor in a suburban location (left) and at a sensor in Newcastle city centre (right)"}
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068893-ac205617-d998-49ee-a5e2-1812ded92f50.png")
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230068932-305a46a9-2d79-4ad2-b429-f60ac1247e25.png")
 ```
 
-We investigated whether traffic volumes could best predict PM10 particulate air pollution on the basis of locality or road identity. 
+The PM10 sensors and the ANPR cameras do not share the same locations.
+Therefore, we investigated whether traffic volumes could best predict PM10 concentrations on the basis of locality or road identity. 
 For the locality effect, we assessed correlations between sensors within the same MSOA.
-For road identity, we compared assigned sensors to their nearest road and assessed correlations between sensors on roads with the same reference (e.g. "A167").
+For road identity, we assigned sensors to their nearest road and assessed correlations between sensors on roads with the same reference (e.g. "A167").
 When assigning the sensors to roads, we did not allow the traffic sensors to be matched with residential, service or unclassified roads, as these appeared to be false matches.
 The air pollution sensors were allowed to be matched to residential roads, but not to service or unclassified roads.
+
+We found no significant correlation between PM10 concentrations and traffic volumes using either of these methods, although matching sensors by road identity produced a slightly higher R-squared than matching by MSOA (Figure /@ref(fig:pm10)).
+We also found no correlation among MSOAs between population density and PM10 concentrations. 
+
+```{r pm10, fig.cap="Median daily sum of vehicles passing ANPR cameras in February 2021 (coloured circles); median PM10 concentrations (grey bubbles); and population density of the MSOAs that contain both sensor types"}
+knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230079192-4b34488f-9096-4028-b18d-b985b584da4a.png")
+```
+
 
 ### Match-day travel
 
