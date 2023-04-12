@@ -1,3 +1,10 @@
+library(sf)
+source("R/download.R")
+# library(tmap)
+# tmap_mode("view")
+library(tidyverse)
+options(tidyverse.quiet = TRUE)
+sf::sf_use_s2(TRUE)
 
 year = 2021
 periods = paste0(year, "-", 1:12)
