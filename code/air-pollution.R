@@ -8,7 +8,7 @@ traffic = readRDS("data/plates_in_stats_2021_2.Rds")
 pm10_records = readRDS("data/pm10_2021_2.Rds")
 
 traffic = traffic %>% 
-  mutate(`Sum plates` = sum_plates)
+  mutate(`Sum plates` = sum_value)
 
 
 # Get median daily traffic for the month ----------------------------------

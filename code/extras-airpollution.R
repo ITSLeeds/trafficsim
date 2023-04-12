@@ -19,7 +19,7 @@
 # tm_shape(join_lsoa) + tm_polygons("mean_pm10")
 # join_lsoa_traffic = st_join(join_lsoa, traffic_osm) %>%
 #   group_by(geo_code, mean_pm10) %>%
-#   summarise(mean_traffic = mean(sum_plates)) %>%
+#   summarise(mean_traffic = mean(sum_value)) %>%
 #   filter(!is.na(mean_traffic))
 # tm_shape(join_lsoa_traffic) + tm_polygons("mean_pm10")
 # tm_shape(join_lsoa_traffic) + tm_polygons("mean_traffic")
@@ -36,7 +36,7 @@
 # traffic_name_mean = traffic_osm %>% 
 #   st_drop_geometry() %>% 
 #   group_by(name) %>% 
-#   summarise(mean_traffic = mean(sum_plates)) %>% 
+#   summarise(mean_traffic = mean(sum_value)) %>% 
 #   filter(! is.na(name))
 # by_name = inner_join(pm10_missing, traffic_name_mean, by = "name")
 # by_ref_name = bind_rows(by_ref, by_name)
@@ -55,12 +55,12 @@
 # tm_shape(join) + tm_polygons("mean_pm10")
 # join_traffic = st_join(join, traffic_osm) %>% 
 #   group_by(geo_code, mean_pm10) %>% 
-#   summarise(mean_traffic = mean(sum_plates)) %>% 
+#   summarise(mean_traffic = mean(sum_value)) %>% 
 #   filter(!is.na(mean_traffic))
 # tm_shape(join_traffic) + tm_polygons("mean_pm10") + 
 #   tm_shape(pm10) + tm_dots("median_value")
 # tm_shape(join_traffic) + tm_polygons("mean_pm10", alpha = 0.5) +
-#   tm_shape(traffic) + tm_dots("sum_plates", palette = "-magma") + 
+#   tm_shape(traffic) + tm_dots("sum_value", palette = "-magma") + 
 #   tm_shape(pm10) + tm_bubbles("median_value")
 # 
 # ggplot(join_traffic, aes(mean_traffic, mean_pm10)) + 
@@ -75,7 +75,7 @@
 # traffic_highway_mean = traffic_osm %>% 
 #   st_drop_geometry() %>% 
 #   group_by(highway) %>% 
-#   summarise(mean_traffic = mean(sum_plates)) %>% 
+#   summarise(mean_traffic = mean(sum_value)) %>% 
 #   filter(! is.na(highway))
 # pm10_highway_mean = pm10_osm %>% 
 #   st_drop_geometry() %>% 

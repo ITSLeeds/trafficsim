@@ -136,7 +136,7 @@ list(
             median_value = median(Value),
             mean_value = mean(Value),
             sd_value = sd(Value),
-            sum_plates = sum(Value)
+            sum_value = sum(Value)
           )
         sensor_locations = sensor_sd %>% 
           select(`Sensor Name`) %>% 

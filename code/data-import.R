@@ -118,28 +118,16 @@ for(i in periods) {
     #   filter(!(day_of_week == "Sunday" | day_of_week == "Saturday")
     #          , hour %in% c(7,8,9,16,17,18)
     #   )
-    if(grepl("plates", sensor_lc)) {
-      sensor_group = sensor_sd %>% 
-        st_drop_geometry() %>% 
-        group_by(`Sensor Name`) %>% 
-        summarise(
-          n = n(),
-          median_value = median(Value),
-          mean_value = mean(Value),
-          sd_value = sd(Value),
-          sum_plates = sum(Value)
-        )
-    } else {
-      sensor_group = sensor_sd %>% 
-        st_drop_geometry() %>% 
-        group_by(`Sensor Name`) %>% 
-        summarise(
-          n = n(),
-          median_value = median(Value),
-          mean_value = mean(Value),
-          sd_value = sd(Value)
-        )
-    }
+    sensor_group = sensor_sd %>% 
+      st_drop_geometry() %>% 
+      group_by(`Sensor Name`) %>% 
+      summarise(
+        n = n(),
+        median_value = median(Value),
+        mean_value = mean(Value),
+        sd_value = sd(Value),
+        sum_value = sum(Value)
+      )
     sensor_locations = sensor_sd %>% 
       select(`Sensor Name`) %>% 
       group_by(`Sensor Name`) %>% 
