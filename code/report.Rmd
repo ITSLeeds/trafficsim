@@ -9,9 +9,16 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Introduction
 
-The EDIF project aims to identify use cases for Urban Observatory data.
+The EDIF project aims to identify use cases for Urban Observatory (UO) data.
 This allows us to identify ways in which the data architecture can be improved.
 We have focused mainly on traffic data.
+
+The first case study investigates traffic flows using ANPR cameras.
+Additional studies investigate links between traffic and air pollution, and changes in travel patterns related to individual events.
+
+Building on this work, we have then identified areas in which more detailed UO metadata could prove beneficial.
+
+## Traffic flow using ANPR cameras
 
 ### Limitations of existing traffic flow modelling
 
@@ -24,7 +31,7 @@ Automatic number plate recognition (ANPR) cameras provide vehicle flow data on a
 This allows us to account for long-term changes in traffic flows, such as changes related to the construction of new housing developments over the last decade, as well as short-term changes linked to events or periodic patterns.
 These cameras can also capture all trip types, rather than just commuting.
 
-## Methods
+### Methods
 
 The 2011 Census commuting data was collated at MSOA level.
 We then used a 'jittering' process to disaggregate motor vehicle flows between MSOAs using randomly selected origin and destination points on local road networks (Figure \@ref(fig:jitter)). 
@@ -59,15 +66,7 @@ For other data, we only included sensor readings from days on which at least hal
 Sometimes the ANPR cameras don't send any readings for a few hours, then after that they send a single reading that contains the sum of all the vehicle plates recorded over the previous hours. 
 To avoid problems related to this in time-sensitive analyses, we excluded time periods containing less than 10 readings (typically the cameras send readings every 5 minutes), and periods containing a single reading that is greater than 6 standard deviations higher than the mean reading for the given sensor.
 
-### Wider applicability
-
-We have created an R function to download UO datasets. 
-This function can be applied to any other datasets that are stored in similar fashion.
-Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
-
-## Results
-
-### Traffic flows using ANPR cameras
+### Results
 
 There is a significant positive correlation between the traffic flows according to the UO sensor data and traffic flows in the route network derived from commute trips from the 2011 Census.
 This is despite the ten year time gap and the fact that the census data relates solely to travel to work, while the UO sensors will pick up all trip types. 
@@ -88,7 +87,13 @@ To improve accuracy, the route network should be amended to equalise bidirection
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228835442-a6b72b77-2b32-4d9b-9937-af135a33d301.jpg")
 ```
 
-### Traffic flow and air pollution
+### Wider applicability
+
+We have created an R function to download UO datasets. 
+This function can be applied to any other datasets that are stored in similar fashion.
+Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
+
+## Traffic flow and air pollution
 
 To conduct an analysis comparing two UO sensor types, we investigated relations between vehicle flows and concentrations of PM10 particulate air pollution.
 
@@ -117,7 +122,7 @@ knitr::include_graphics("https://user-images.githubusercontent.com/52210872/2300
 ```
 
 
-### Match-day travel
+## Match-day travel
 
 We investigated travel associated with home football matches at St. James' Park stadium in Newcastle.
 During the first half of the 2021-22 season (August - December 2021), Newcastle United played 12 home matches, of which five were on Saturdays, all but one of these having a 3pm kick-off (the kick-off time for the final match is unknown but within an hour of 3pm).
