@@ -52,17 +52,10 @@
       day_by_day = in_full_days %>%
         group_by(day) %>%
         summarise(n = n())
-      if(grepl("plates", sensor_lc)) {
-        keep_days = day_by_day %>%
-          filter(
-            n > 100 # for plates, need full records for at least 100 sensors
-          )
-      } else {
-        keep_days = day_by_day %>%
-          filter(
-            n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
-          )
-      }
+      keep_days = day_by_day %>%
+        filter(
+          n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
+        )
       keep_days = keep_days$day
       # kept = c(kept, keep_days)
       if(grepl("plates", sensor_lc)) {
