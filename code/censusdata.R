@@ -102,7 +102,7 @@ in_sum = readRDS("data/plates_in_stats_2021_2.Rds")
 period = readRDS("data/plates_in_2021_2.Rds")
 days_in_period = length(unique(period$day))
 in_sum = in_sum %>% 
-  mutate(daily_plates = sum_plates / days_in_period)
+  mutate(daily_plates = sum_value / days_in_period)
 
 # For Figure 2
 inn = in_sum %>% 
