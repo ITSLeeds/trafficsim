@@ -18,7 +18,17 @@ Additional studies investigate links between traffic and air pollution, and chan
 
 Building on this work, we have then identified areas in which more detailed UO metadata could prove beneficial.
 
+### Wider applicability
+
+We have created an R function to download UO datasets. 
+This function can be applied to any other datasets that are stored in similar fashion.
+Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
+
+For the download function, see https://github.com/ITSLeeds/trafficsim/blob/main/R/download.R and for the generalised UO data import and cleaning script that uses it, see https://github.com/ITSLeeds/trafficsim/blob/main/code/data-import.R.
+
 ## Traffic flow using ANPR cameras
+
+For code used in this section, see https://github.com/ITSLeeds/trafficsim/blob/main/code/censusdata.R.
 
 ### Limitations of existing traffic flow modelling
 
@@ -87,12 +97,6 @@ To improve accuracy, the route network should be amended to equalise bidirection
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/228835442-a6b72b77-2b32-4d9b-9937-af135a33d301.jpg")
 ```
 
-### Wider applicability
-
-We have created an R function to download UO datasets. 
-This function can be applied to any other datasets that are stored in similar fashion.
-Parameters such as dataset name, time period desired, and the base URL, can be amended as required.
-
 ## Traffic flow and air pollution
 
 To conduct an analysis comparing two UO sensor types, we investigated relations between vehicle flows and concentrations of PM10 particulate air pollution.
@@ -121,6 +125,7 @@ We also found no correlation among MSOAs between population density and PM10 con
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230079192-4b34488f-9096-4028-b18d-b985b584da4a.png")
 ```
 
+For code used in this section, see https://github.com/ITSLeeds/trafficsim/blob/main/code/air-pollution.R.
 
 ## Match-day travel
 
@@ -138,6 +143,8 @@ Using the four ANPR cameras closest to St. James' Park stadium, we can see that 
 ```{r matchday, fig.cap="Mean hourly traffic on match Saturdays (red) and non-match Saturdays (black), at the four camera locations closest to the St. James' Park stadium, Aug-Dec 2021"}
 knitr::include_graphics("https://user-images.githubusercontent.com/52210872/230081729-700abd24-b36e-460c-9d80-c1286529f2e9.png")
 ```
+
+For code used in this section, see https://github.com/ITSLeeds/trafficsim/blob/main/code/stadiums.R.
 
 ## How to improve Urban Observatory data usability
 
