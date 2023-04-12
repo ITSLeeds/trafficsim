@@ -61,7 +61,7 @@ for(i in periods) {
       summarise(n = n())
     keep_days = day_by_day %>%
       filter(
-        n > nrow(in_max)/2  # for others, need full records for at least half of all sensors
+        n > nrow(in_max)/2  # need full records for at least half of all sensors
       )
     keep_days = keep_days$day
     # kept = c(kept, keep_days)
